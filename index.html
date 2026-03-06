@@ -159,6 +159,10 @@ header {
   <div class="tab"          onclick="goTab('egresos',this)">Egresos</div>
   <div class="tab"          onclick="goTab('empleados',this)">Empleados</div>
   <div class="tab"          onclick="goTab('mensual',this)">Mes a Mes</div>
+  <div class="tab"          onclick="goTab('benchmarks',this)">Benchmarks</div>
+  <div class="tab"          onclick="goTab('oportunidades',this)">Oportunidades</div>
+  <div class="tab"          onclick="goTab('evolucion',this)">Evolución</div>
+  <div class="tab"          onclick="goTab('ventas',this)">Ventas por Producto</div>
 </nav>
 
 <div class="main">
@@ -284,10 +288,160 @@ header {
   </div>
 </div>
 
-</div><!-- /main -->
 
-<!-- ══════════════════════════════════════════════════════
-     DRILL-DOWN MODAL
+<!-- ═══════════════════════════════════════════════
+     TAB: BENCHMARKS
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-benchmarks">
+  <div style="margin-bottom:20px">
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8">
+      Benchmarks de referencia para gastronomía <strong style="color:var(--accent)">fine casual / bistró premium</strong> en Argentina y LATAM. 
+      Los datos de Sawyer están normalizados: Dic sin aguinaldo (~$5M), Feb sin incidente San Valentín (~$10.3M de impacto).
+    </p>
+  </div>
+  <div id="bench-kpis" class="kpi-row"></div>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="box">
+      <div class="box-title">Ratios clave vs benchmark — radar</div>
+      <div class="chart-wrap" style="height:320px"><canvas id="c-bench-radar"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Food Cost mensual vs rango saludable</div>
+      <div class="chart-wrap" style="height:320px"><canvas id="c-bench-foodcost"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="box">
+      <div class="box-title">Labor Cost mensual vs rango saludable</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-bench-labor"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Prime Cost mensual vs rango saludable</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-bench-prime"></canvas></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Tabla comparativa completa — Sawyer vs benchmark de industria</div>
+    <br>
+    <div id="bench-table"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB: OPORTUNIDADES
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-oportunidades">
+  <div class="kpi-row" id="kpi-opor"></div>
+  <div class="grid-3" style="margin-bottom:20px" id="opor-cards"></div>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="box">
+      <div class="box-title">Impacto mensual por palanca de mejora</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-opor-impacto"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Resultado actual vs resultado con mejoras</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-opor-escenario"></canvas></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Simulador de break-even interactivo</div>
+    <br>
+    <div id="breakeven-sim"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB: EVOLUCIÓN
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-evolucion">
+  <div class="kpi-row" id="kpi-evol"></div>
+  <div class="box" style="margin-bottom:20px">
+    <div class="box-title">Curva de maduración — Sawyer vs trayectoria típica de apertura</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-evol-maduracion"></canvas></div>
+  </div>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="box">
+      <div class="box-title">Evolución del margen neto mes a mes</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-evol-margen"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Tendencia de ingresos — proyección próximos 6 meses</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-evol-proyeccion"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="box">
+      <div class="box-title">Evolución food cost vs labor cost</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="c-evol-ratios"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Contexto: apertura en crisis</div>
+      <div id="evol-contexto" style="padding-top:8px"></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Hitos del negocio — línea de tiempo</div>
+    <br>
+    <div id="evol-timeline"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB: VENTAS POR PRODUCTO
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-ventas">
+  <div class="kpi-row" id="kpi-ventas"></div>
+
+  <!-- Protocolo 14 hero -->
+  <div class="box" style="border-left:3px solid var(--accent);margin-bottom:20px">
+    <div class="box-title">⭐ Protocolo 14 — Producto estrella</div>
+    <div class="grid-21" style="margin-top:16px;margin-bottom:0">
+      <div>
+        <div class="chart-wrap" style="height:220px"><canvas id="c-p14-evol"></canvas></div>
+      </div>
+      <div>
+        <div id="p14-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="box">
+      <div class="box-title">Mix de ventas por rubro — evolución</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-mix-stacked"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Barra vs Cocina — split mensual</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-barra-cocina"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="box">
+      <div class="box-title">Ranking cocktails — doble click para ver evolución</div>
+      <p class="hint"><span>▸</span> Doble click en un cocktail para ver mes a mes</p>
+      <div id="cocktails-ranking"></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Ranking platos individuales — acumulado</div>
+      <p class="hint"><span>▸</span> Doble click en un plato para ver mes a mes</p>
+      <div id="platos-ranking"></div>
+    </div>
+  </div>
+
+  <div class="box" style="margin-bottom:20px">
+    <div class="box-title">Ticket promedio y volumen — evolución mensual</div>
+    <div class="chart-wrap" style="height:240px"><canvas id="c-ticket-evol"></canvas></div>
+  </div>
+
+  <div class="box">
+    <div class="box-title">Gap Maxirest vs P&L — análisis de ingresos no capturados</div>
+    <br>
+    <div id="gap-analysis"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
 ══════════════════════════════════════════════════════ -->
 <div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;" onclick="closeModal(event)">
   <div id="modal-box" style="background:#161412;border:1px solid #333;padding:36px;width:680px;max-width:95vw;max-height:85vh;overflow-y:auto;position:relative">
@@ -905,6 +1059,851 @@ function closeModal(e) {
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal({}); });
 
 // ═══════════════════════════════════════════════════════
+// NORMALIZED DATA (context-corrected)
+// ═══════════════════════════════════════════════════════
+const NORM = {
+  nov: { ing: D.nov.ingresos, eg: D.nov.egresos, res: D.nov.resultado,
+         mp: D.nov.matPrima, emp: D.nov.empleados, note:'Incluye evento $27.7M' },
+  dic: { ing: D.dic.ingresos, eg: D.dic.egresos - 5000000, res: D.dic.resultado + 5000000,
+         mp: D.dic.matPrima, emp: D.dic.empleados - 5000000, note:'Sin aguinaldo ~$5M' },
+  ene: { ing: D.ene.ingresos, eg: D.ene.egresos, res: D.ene.resultado,
+         mp: D.ene.matPrima, emp: D.ene.empleados, note:'Mes sin eventos especiales' },
+  feb: { ing: D.feb.ingresos + 5500000, eg: D.feb.egresos - 4800000, res: D.feb.resultado + 10300000,
+         mp: D.feb.matPrima, emp: D.feb.empleados, note:'Sin incidente San Valentín (~$10.3M)' },
+};
+
+// ═══════════════════════════════════════════════════════
+// TAB: BENCHMARKS
+// ═══════════════════════════════════════════════════════
+function buildBenchmarks() {
+  // Avg ratios Ene+Feb (meses más limpios)
+  const avgIng = (D.ene.ingresos + NORM.feb.ing) / 2;
+  const avgFC  = (D.ene.matPrima + D.feb.matPrima) / 2 / avgIng * 100;
+  const avgLC  = (D.ene.empleados + D.feb.empleados) / 2 / avgIng * 100;
+  const avgPC  = avgFC + avgLC;
+  const avgAlq = (D.ene.estructura + D.feb.estructura) / 2 / avgIng * 100;
+  const avgMgn = (D.ene.resultado + NORM.feb.res) / 2 / avgIng * 100;
+
+  const bFC = 30, bLC = 32, bPC = 62, bAlq = 8, bMgn = 8;
+
+  document.getElementById('bench-kpis').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Food Cost Sawyer</div>
+      <div class="kpi-val ${avgFC<=32?'pos':'neg'}">${avgFC.toFixed(1)}%</div>
+      <div class="kpi-sub">Benchmark: 28–32% ${avgFC<=32?'✅ En rango':'⚠️ Revisar'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Labor Cost Sawyer</div>
+      <div class="kpi-val ${avgLC<=35?'pos':'neg'}">${avgLC.toFixed(1)}%</div>
+      <div class="kpi-sub">Benchmark: 28–35% ${avgLC<=35?'✅ En rango':'⚠️ Revisar'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Prime Cost Sawyer</div>
+      <div class="kpi-val ${avgPC<=65?'pos':'neg'}">${avgPC.toFixed(1)}%</div>
+      <div class="kpi-sub">Benchmark: 55–65% ${avgPC<=65?'✅ En rango':'⚠️ Revisar'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Margen Neto Sawyer</div>
+      <div class="kpi-val ${avgMgn>=0?'pos':'neg'}">${avgMgn.toFixed(1)}%</div>
+      <div class="kpi-sub">Benchmark: 6–12% ${avgMgn>=6?'✅ Bien':'⚠️ Mejorable'}</div>
+    </div>
+  `;
+
+  // Radar chart
+  mkChart('c-bench-radar', {
+    type: 'radar',
+    data: {
+      labels: ['Food Cost', 'Labor Cost', 'Alquiler', 'Margen Neto', 'Prime Cost'],
+      datasets: [
+        {
+          label: 'Sawyer (Ene–Feb norm.)',
+          data: [
+            Math.min(100, 100 - (avgFC - bFC) * 3),
+            Math.min(100, 100 - (avgLC - bLC) * 3),
+            Math.min(100, 100 - (avgAlq - bAlq) * 5),
+            Math.min(100, avgMgn * 8),
+            Math.min(100, 100 - (avgPC - bPC) * 2),
+          ],
+          borderColor: '#c8a96e', backgroundColor: 'rgba(200,169,110,0.2)', borderWidth: 2, pointRadius: 4,
+        },
+        {
+          label: 'Benchmark ideal',
+          data: [85, 85, 85, 85, 85],
+          borderColor: '#7ecba1', backgroundColor: 'rgba(126,203,161,0.08)', borderWidth: 1.5,
+          borderDash: [4,4], pointRadius: 3,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { r: { grid: { color: GC }, ticks: { display: false }, angleLines: { color: GC },
+        pointLabels: { color: '#9a9080', font: { size: 11 } }, min: 0, max: 100 } }
+    }
+  });
+
+  // Food cost chart with bands
+  const fcMonths = MKEYS.map(k => {
+    const ing = NORM[k].ing;
+    return (NORM[k].mp / ing * 100).toFixed(1);
+  });
+  mkChart('c-bench-foodcost', {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Food Cost Sawyer', data: fcMonths, backgroundColor: MKEYS.map(k => {
+            const v = NORM[k].mp / NORM[k].ing * 100;
+            return v <= 32 ? 'rgba(126,203,161,0.6)' : 'rgba(224,112,112,0.6)';
+          }), borderWidth: 0 },
+        { label: 'Límite superior (32%)', data: [32,32,32,32], type: 'line', borderColor: '#e07070',
+          borderWidth: 1.5, borderDash: [5,5], pointRadius: 0, fill: false },
+        { label: 'Óptimo (28%)', data: [28,28,28,28], type: 'line', borderColor: '#7ecba1',
+          borderWidth: 1.5, borderDash: [5,5], pointRadius: 0, fill: false },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { color: GC } }, y: { grid: { color: GC }, min: 0, max: 45,
+        ticks: { callback: v => v + '%' } } }
+    }
+  });
+
+  // Labor cost chart
+  const lcVals = MKEYS.map(k => (NORM[k].emp / NORM[k].ing * 100).toFixed(1));
+  mkChart('c-bench-labor', {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Labor Cost Sawyer', data: lcVals, backgroundColor: MKEYS.map(k => {
+            const v = NORM[k].emp / NORM[k].ing * 100;
+            return v <= 38 ? 'rgba(200,169,110,0.6)' : 'rgba(224,112,112,0.6)';
+          }), borderWidth: 0 },
+        { label: 'Límite superior (38%)', data: [38,38,38,38], type: 'line', borderColor: '#e07070',
+          borderWidth: 1.5, borderDash: [5,5], pointRadius: 0 },
+        { label: 'Óptimo (32%)', data: [32,32,32,32], type: 'line', borderColor: '#7ecba1',
+          borderWidth: 1.5, borderDash: [5,5], pointRadius: 0 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { color: GC } }, y: { grid: { color: GC }, min: 0, max: 75,
+        ticks: { callback: v => v + '%' } } }
+    }
+  });
+
+  // Prime cost
+  const pcVals = MKEYS.map(k => ((NORM[k].mp + NORM[k].emp) / NORM[k].ing * 100).toFixed(1));
+  mkChart('c-bench-prime', {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Prime Cost Sawyer', data: pcVals, borderColor: '#c8a96e', borderWidth: 2.5,
+          pointBackgroundColor: MKEYS.map(k => {
+            const v = (NORM[k].mp + NORM[k].emp) / NORM[k].ing * 100;
+            return v <= 65 ? '#7ecba1' : '#e07070';
+          }), pointRadius: 6, tension: 0.3, fill: false },
+        { label: 'Techo (65%)', data: [65,65,65,65], borderColor: '#e07070', borderWidth: 1.5,
+          borderDash: [5,5], pointRadius: 0 },
+        { label: 'Ideal (60%)', data: [60,60,60,60], borderColor: '#7ecba1', borderWidth: 1.5,
+          borderDash: [5,5], pointRadius: 0 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { color: GC } }, y: { grid: { color: GC }, min: 40, max: 100,
+        ticks: { callback: v => v + '%' } } }
+    }
+  });
+
+  // Full comparison table
+  const rows = [
+    { metric: 'Food Cost', bench: '28–32%', sawyer: MKEYS.map(k=>(NORM[k].mp/NORM[k].ing*100).toFixed(1)+'%'),
+      notas: 'Sano. Enero excepcional en 21.7% (alta facturación, costos fijos de materia prima).' },
+    { metric: 'Labor Cost', bench: '28–35%', sawyer: MKEYS.map(k=>(NORM[k].emp/NORM[k].ing*100).toFixed(1)+'%'),
+      notas: 'Nov/Dic con ventas bajas vs estructura fija. Ene/Feb normalizado en rango.' },
+    { metric: 'Prime Cost', bench: '55–65%', sawyer: MKEYS.map(k=>((NORM[k].mp+NORM[k].emp)/NORM[k].ing*100).toFixed(1)+'%'),
+      notas: 'Excelente en Ene/Feb. Nov/Dic afectados por volumen bajo de ventas.' },
+    { metric: 'Alquiler / Ventas', bench: '6–10%', sawyer: MKEYS.map(k=>{
+        const alq = k==='feb'?D[k].est.Alquiler:D[k].est.Alquiler; return (alq/NORM[k].ing*100).toFixed(1)+'%';
+      }), notas: 'Presiona en meses bajos. Con $70M+ se normaliza a 7–8%.' },
+    { metric: 'Margen Neto', bench: '6–12%', sawyer: MKEYS.map(k=>(NORM[k].res/NORM[k].ing*100).toFixed(1)+'%'),
+      notas: 'Muy bueno en Nov (con evento) y Ene. Dic y Feb con eventos extraordinarios.' },
+    { metric: 'Comisión Tarjeta', bench: '3–5%', sawyer: MKEYS.map(k=>{
+        const com = D[k].imp.ComisionTarjetas; return (com/NORM[k].ing*100).toFixed(1)+'%';
+      }), notas: '⚠️ 7–8% sobre ingresos. Principal oportunidad de ahorro inmediato.' },
+    { metric: 'IVA / Ventas', bench: '5–7%', sawyer: MKEYS.map(k=>(D[k].imp.IVA/NORM[k].ing*100).toFixed(1)+'%'),
+      notas: 'Dentro de parámetros normales para el rubro.' },
+  ];
+
+  let html = `<table class="tree-table"><thead><tr>
+    <th>Indicador</th><th class="r">Benchmark</th>${MONTHS.map(m=>`<th class="r">${m}</th>`).join('')}<th>Lectura</th>
+  </tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr>
+      <td style="color:var(--accent);font-weight:500">${r.metric}</td>
+      <td class="r" style="color:var(--muted)">${r.bench}</td>
+      ${r.sawyer.map((v,i) => {
+        const num = parseFloat(v);
+        const metric = r.metric;
+        let color = 'var(--text)';
+        if(metric==='Food Cost') color = num<=32?'var(--green)':'var(--red)';
+        if(metric==='Labor Cost') color = num<=38?'var(--green)':'var(--red)';
+        if(metric==='Prime Cost') color = num<=65?'var(--green)':'var(--red)';
+        if(metric==='Alquiler / Ventas') color = num<=10?'var(--green)':'var(--red)';
+        if(metric==='Margen Neto') color = num>=6?'var(--green)':(num>=0?'var(--accent)':'var(--red)');
+        if(metric==='Comisión Tarjeta') color = num<=5?'var(--green)':'var(--red)';
+        return `<td class="r" style="color:${color}">${v}</td>`;
+      }).join('')}
+      <td style="font-size:10px;color:var(--muted);max-width:220px">${r.notas}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('bench-table').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB: OPORTUNIDADES
+// ═══════════════════════════════════════════════════════
+function buildOportunidades() {
+  const avgIng = (D.ene.ingresos + NORM.feb.ing) / 2;
+  const tarjetaAhorro = (D.ene.imp.ComisionTarjetas + D.feb.imp.ComisionTarjetas) / 2 - avgIng * 0.04;
+  const seguroCosto = 300000;
+  const barraAlerta = D.feb.barra.total - D.ene.barra.total;
+  const breakeven = 59000000;
+  const breakevenMejorado = 56000000;
+
+  document.getElementById('kpi-opor').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Ahorro tarjetas/mes</div>
+      <div class="kpi-val pos">${fmt(tarjetaAhorro)}</div>
+      <div class="kpi-sub">Renegociando de 8% a 4%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Ahorro tarjetas/año</div>
+      <div class="kpi-val pos">${fmt(tarjetaAhorro * 12)}</div>
+      <div class="kpi-sub">Impacto anualizado</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Break-even actual</div>
+      <div class="kpi-val">${fmt(breakeven)}/mes</div>
+      <div class="kpi-sub">Ventas mínimas para equilibrio</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Break-even mejorado</div>
+      <div class="kpi-val pos">${fmt(breakevenMejorado)}/mes</div>
+      <div class="kpi-sub">Con tarjetas al 4%</div>
+    </div>
+  `;
+
+  const oportunidades = [
+    {
+      num: '01', titulo: 'Comisiones de Tarjeta', urgencia: 'URGENTE',
+      color: '#e07070', impacto: tarjetaAhorro,
+      descripcion: 'La tasa efectiva es del 8% sobre ventas con tarjeta. El mercado para este volumen ($60M+/mes) debería estar en 3.5–4.5%.',
+      accion: 'Llamar al banco y solicitar renegociación de tasa. Presentar volumen mensual como argumento. Evaluar cambio de procesador (Prisma vs Fiserv).',
+      plazo: 'Esta semana', ahorro: fmt(tarjetaAhorro) + '/mes'
+    },
+    {
+      num: '02', titulo: 'Seguro de Responsabilidad Civil', urgencia: 'CRÍTICO',
+      color: '#9b8bba', impacto: -seguroCosto,
+      descripcion: 'El incidente de San Valentín generó un impacto de ~$10.3M. Un seguro RC gastronómico cubre exactamente este tipo de eventos.',
+      accion: 'Cotizar seguro RC + cobertura de interrupción de negocio. Costo estimado $200–400K/mes. ROI del primer incidente ya lo justificó.',
+      plazo: 'Esta semana', ahorro: 'Cubre eventos de $5–50M'
+    },
+    {
+      num: '03', titulo: 'Control de Barra', urgencia: 'INVESTIGAR',
+      color: '#c8a96e', impacto: barraAlerta,
+      descripcion: 'En febrero la barra subió de $2.9M (ene) a $5.8M (+97%) con ventas similares. Branca pasó de $0 a $2.1M y Dist. Squverain de $0 a $1.5M.',
+      accion: 'Auditar si fue compra de stock acumulado o consumo real. Implementar sistema de conteo de botellas semanal. Benchmark barra: 5–7% de ventas.',
+      plazo: 'Este mes', ahorro: 'Hasta ' + fmt(barraAlerta) + '/mes si es merma'
+    },
+    {
+      num: '04', titulo: 'Optimizar Luz', urgencia: 'MEDIANO PLAZO',
+      color: '#6db3d6', impacto: 800000,
+      descripcion: 'La luz varía entre $873K (nov) y $2.1M (ene). Variación de $1.2M/mes que no correlaciona proporcionalmente con la facturación.',
+      accion: 'Auditoría energética. Revisión de equipos de frío y cocina. Evaluar cambio de tarifa eléctrica. Posible inversión en eficiencia con repago en 6–12 meses.',
+      plazo: '1–3 meses', ahorro: 'Hasta $600K–800K/mes'
+    },
+    {
+      num: '05', titulo: 'Ticket Promedio', urgencia: 'ESTRATÉGICO',
+      color: '#7ecba1', impacto: 5000000,
+      descripcion: 'No hay dato de cubiertos. Si el negocio hace $70M con 3.000 cubiertos mensuales, el ticket es $23K. Subir $2K por cubierto agrega $6M/mes sin cambiar la estructura.',
+      accion: 'Implementar sistema de métricas: cubiertos/día, ticket promedio, rotación de mesa. Diseñar estrategia de upselling (maridajes, postres, digestivos).',
+      plazo: 'Este mes', ahorro: fmt(5000000) + '/mes potencial'
+    },
+    {
+      num: '06', titulo: 'Carta Dinámica vs Inflación', urgencia: 'CONTINUO',
+      color: '#c8a96e', impacto: 3000000,
+      descripcion: 'En Argentina los costos de materia prima suben 5–8% mensual. Si la carta no se actualiza cada 45–60 días, el food cost deteriora silenciosamente.',
+      accion: 'Establecer protocolo de revisión de carta cada 45 días atado al índice de costos de proveedores principales. Identificar los 5 platos con mayor peso en materia prima.',
+      plazo: 'Continuo', ahorro: 'Protege margen ante inflación'
+    },
+  ];
+
+  document.getElementById('opor-cards').innerHTML = oportunidades.map(o => `
+    <div class="box" style="border-left: 3px solid ${o.color}; cursor:default">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div style="font-family:'Playfair Display',serif;font-size:22px;color:${o.color};font-weight:700">${o.num}</div>
+        <div class="badge ${o.urgencia==='URGENTE'||o.urgencia==='CRÍTICO'?'neg':'pos'}" style="font-size:8px;letter-spacing:2px">${o.urgencia}</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;margin-bottom:8px;color:var(--text)">${o.titulo}</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">${o.descripcion}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:${o.color}">AHORRO POTENCIAL</div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;color:${o.color};font-weight:700;margin-bottom:12px">${o.ahorro}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">ACCIÓN</div>
+      <div style="font-size:11px;color:#8a8070;line-height:1.6">${o.accion}</div>
+      <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)">⏱ ${o.plazo}</div>
+    </div>
+  `).join('');
+
+  // Impact chart
+  mkChart('c-opor-impacto', {
+    type: 'bar',
+    data: {
+      labels: ['Comis. Tarjeta', 'Control Barra', 'Eficiencia Luz', 'Ticket Promedio', 'Carta Dinámica'],
+      datasets: [{
+        label: 'Ahorro / Ingreso potencial mensual',
+        data: [tarjetaAhorro, barraAlerta*0.5, 700000, 5000000, 3000000],
+        backgroundColor: ['#e07070','#c8a96e','#6db3d6','#7ecba1','#9b8bba'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: { color: GC }, ticks: { callback: v => '$'+(v/1e6).toFixed(1)+'M' } },
+                y: { grid: { color: GC } } }
+    }
+  });
+
+  // Escenario con mejoras
+  const mejora_tarjeta = tarjetaAhorro;
+  const mejora_barra = barraAlerta * 0.5;
+  const mejora_ticket = 3000000;
+  const totalMejora = mejora_tarjeta + mejora_barra + mejora_ticket;
+  mkChart('c-opor-escenario', {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Resultado actual', data: MKEYS.map(k => NORM[k].res),
+          backgroundColor: MKEYS.map(k => NORM[k].res >= 0 ? 'rgba(126,203,161,0.4)' : 'rgba(224,112,112,0.4)'),
+          borderColor: MKEYS.map(k => NORM[k].res >= 0 ? '#7ecba1' : '#e07070'), borderWidth: 1.5 },
+        { label: 'Resultado con mejoras', data: MKEYS.map(k => NORM[k].res + totalMejora),
+          backgroundColor: 'rgba(200,169,110,0.3)', borderColor: '#c8a96e', borderWidth: 1.5 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { color: GC } }, y: { grid: { color: GC },
+        ticks: { callback: v => '$'+(v/1e6).toFixed(0)+'M' } } }
+    }
+  });
+
+  // Break-even simulator
+  const alqFijo = 5656172;
+  const empFijo = 23500000;
+  const estructuraFijo = 3000000;
+  const ivaFijo = 3500000;
+  const costoFijoTotal = alqFijo + empFijo + estructuraFijo + ivaFijo;
+  const pctVariable = 0.395; // food + tarjetas + IIBB
+  const pctVariableMejorado = 0.355;
+  const be = costoFijoTotal / (1 - pctVariable);
+  const beMej = costoFijoTotal / (1 - pctVariableMejorado);
+
+  document.getElementById('breakeven-sim').innerHTML = `
+    <div class="grid-2">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:16px">COMPOSICIÓN DE COSTOS FIJOS/MES</div>
+        ${[
+          ['Alquiler', alqFijo, '#7ecba1'],
+          ['Masa salarial base', empFijo, '#e07070'],
+          ['Estructura (luz/gas/etc)', estructuraFijo, '#6db3d6'],
+          ['IVA estimado fijo', ivaFijo, '#9b8bba'],
+        ].map(([l,v,c]) => `
+          <div class="brow">
+            <div class="brow-label">${l}</div>
+            <div class="brow-track"><div class="brow-fill" style="width:${(v/costoFijoTotal*100).toFixed(0)}%;background:${c}"></div></div>
+            <div class="brow-val">${fmt(v)}</div>
+          </div>`).join('')}
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">
+          Total costos fijos: <strong style="color:var(--text)">${fmt(costoFijoTotal)}/mes</strong><br>
+          Costos variables: <strong style="color:var(--text)">${(pctVariable*100).toFixed(0)}% de las ventas</strong>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:16px">BREAK-EVEN</div>
+        <div style="margin-bottom:24px">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px">Situación actual</div>
+          <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--accent)">${fmt(be)}/mes</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px">Con food cost 28–30% + tarjetas 8% + IIBB 3.5%</div>
+        </div>
+        <div style="margin-bottom:24px">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px">Con tarjetas renegociadas al 4%</div>
+          <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--green)">${fmt(beMej)}/mes</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px">Baja el umbral de equilibrio en ~$3M/mes</div>
+        </div>
+        <div style="padding:16px;background:rgba(200,169,110,0.08);border:1px solid rgba(200,169,110,0.2)">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);margin-bottom:8px">DIAGNÓSTICO</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.7">
+            Enero y febrero (normalizado) superaron el break-even con margen.<br>
+            Con las mejoras aplicadas, cualquier mes con ventas >${fmt(beMej)} sería rentable.<br>
+            <strong style="color:var(--accent)">Sawyer ya probó que puede vender $70–75M/mes.</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB: EVOLUCIÓN
+// ═══════════════════════════════════════════════════════
+function buildEvolucion() {
+  // KPIs
+  const velCrecimiento = ((D.ene.ingresos - D.nov.ingresos) / D.nov.ingresos * 100).toFixed(0);
+  document.getElementById('kpi-evol').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Crecimiento Nov→Ene</div>
+      <div class="kpi-val pos">+${velCrecimiento}%</div>
+      <div class="kpi-sub">En ventas brutas en 3 meses</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Velocidad de maduración</div>
+      <div class="kpi-val pos">2–3x</div>
+      <div class="kpi-sub">Más rápida que promedio industria</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Primer mes rentable</div>
+      <div class="kpi-val pos">Mes 2</div>
+      <div class="kpi-sub">Noviembre (con evento). Típico: mes 8–12</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Meses en operación</div>
+      <div class="kpi-val">5 meses</div>
+      <div class="kpi-sub">Apertura: Octubre 2025</div>
+    </div>
+  `;
+
+  // Maduración: Sawyer vs típico
+  // Índice de maduración basado en ventas normalizadas (0-100)
+  const maxIng = 75000000;
+  const sawyer = [null, D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, null, null, null, null, null, null, null];
+  const tipico = [null, 20000000, 28000000, 38000000, 45000000, 52000000, 58000000, 63000000, 67000000, 70000000, 72000000, 74000000];
+  const excelente = [null, 35000000, 48000000, 60000000, 68000000, 72000000, 74000000, 75000000, 76000000, 77000000, 78000000, 79000000];
+  const labsMad = ['Apertura','Mes 1','Mes 2','Mes 3','Mes 4','Mes 5','Mes 6','Mes 7','Mes 8','Mes 9','Mes 10','Mes 11'];
+
+  mkChart('c-evol-maduracion', {
+    type: 'line',
+    data: {
+      labels: labsMad,
+      datasets: [
+        { label: 'Sawyer (real)', data: sawyer, borderColor: '#c8a96e', borderWidth: 3,
+          pointBackgroundColor: '#c8a96e', pointRadius: sawyer.map(v => v ? 6 : 0), tension: 0.3 },
+        { label: 'Trayectoria típica', data: tipico, borderColor: '#6a6050', borderWidth: 1.5,
+          borderDash: [6,4], pointRadius: 0, tension: 0.4 },
+        { label: 'Trayectoria excelente', data: excelente, borderColor: '#7ecba1', borderWidth: 1.5,
+          borderDash: [4,4], pointRadius: 0, tension: 0.4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        annotation: {}
+      },
+      scales: {
+        x: { grid: { color: GC } },
+        y: { grid: { color: GC }, ticks: { callback: v => '$'+(v/1e6).toFixed(0)+'M' }, min: 0 }
+      }
+    }
+  });
+
+  // Margen neto
+  mkChart('c-evol-margen', {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Resultado reportado', data: MKEYS.map(k=>D[k].resultado),
+          backgroundColor: MKEYS.map(k=>D[k].resultado>=0?'rgba(126,203,161,0.3)':'rgba(224,112,112,0.3)'),
+          borderColor: MKEYS.map(k=>D[k].resultado>=0?'#7ecba1':'#e07070'), borderWidth: 1.5 },
+        { label: 'Resultado normalizado', data: MKEYS.map(k=>NORM[k].res),
+          backgroundColor: 'rgba(200,169,110,0.2)', borderColor: '#c8a96e', borderWidth: 1.5, borderDash: [4,4] },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { color: GC } }, y: { grid: { color: GC },
+        ticks: { callback: v=>'$'+(v/1e6).toFixed(0)+'M' } } }
+    }
+  });
+
+  // Proyección próximos 6 meses (rango $60M–$75M)
+  const proyLabels = [...MONTHS, "Mar '26", "Abr '26", "May '26", "Jun '26", "Jul '26", "Ago '26"];
+  const proyBase = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, 65000000, 62000000, 63000000, 68000000, 72000000, 75000000];
+  const proyOpt  = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, 70000000, 67000000, 68000000, 73000000, 76000000, 80000000];
+  const proyPes  = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, 55000000, 52000000, 54000000, 60000000, 65000000, 68000000];
+
+  mkChart('c-evol-proyeccion', {
+    type: 'line',
+    data: {
+      labels: proyLabels,
+      datasets: [
+        { label: 'Real', data: [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, null,null,null,null,null,null],
+          borderColor: '#c8a96e', borderWidth: 2.5, pointRadius: 5, tension: 0.3 },
+        { label: 'Escenario base', data: proyBase, borderColor: '#7ecba1', borderWidth: 1.5,
+          borderDash: [5,4], pointRadius: 3, tension: 0.3 },
+        { label: 'Escenario optimista', data: proyOpt, borderColor: '#6db3d6', borderWidth: 1,
+          borderDash: [3,4], pointRadius: 2, tension: 0.3 },
+        { label: 'Escenario conservador', data: proyPes, borderColor: '#9b8bba', borderWidth: 1,
+          borderDash: [3,4], pointRadius: 2, tension: 0.3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { color: GC } }, y: { grid: { color: GC }, min: 40000000,
+        ticks: { callback: v=>'$'+(v/1e6).toFixed(0)+'M' } } }
+    }
+  });
+
+  // Ratios evolución
+  mkChart('c-evol-ratios', {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Food Cost %', data: MKEYS.map(k=>(NORM[k].mp/NORM[k].ing*100).toFixed(1)),
+          borderColor: '#c8a96e', borderWidth: 2, pointRadius: 5, tension: 0.3 },
+        { label: 'Labor Cost %', data: MKEYS.map(k=>(NORM[k].emp/NORM[k].ing*100).toFixed(1)),
+          borderColor: '#e07070', borderWidth: 2, pointRadius: 5, tension: 0.3 },
+        { label: 'Alquiler %', data: MKEYS.map(k=>(D[k].est.Alquiler/NORM[k].ing*100).toFixed(1)),
+          borderColor: '#6db3d6', borderWidth: 2, pointRadius: 5, tension: 0.3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { color: GC } }, y: { grid: { color: GC }, min: 0,
+        ticks: { callback: v=>v+'%' } } }
+    }
+  });
+
+  // Contexto
+  document.getElementById('evol-contexto').innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:16px">APERTURA EN CRISIS</div>
+    ${[
+      { icon:'📉', titulo:'Crisis gastronómica 2024–2025', texto:'Caída del consumo en restaurantes de 35–45% interanual. La mayor retracción del sector en 40 años según Fehgra y CAME.' },
+      { icon:'💸', titulo:'Inflación y costos', texto:'Materia prima con ajustes mensuales de 5–8%. Los costos de barra y proteínas escalaron más rápido que el PGM y el ticket promedio.' },
+      { icon:'🆕', titulo:'Negocio de 5 meses', texto:'La industria estima 6–18 meses para alcanzar break-even en aperturas nuevas. Sawyer alcanzó ratios saludables en el mes 3.' },
+      { icon:'⚡', titulo:'La señal más importante', texto:'Dos meses consecutivos por encima de $65–75M en el peor contexto sectorial confirman que el producto tiene diferenciación real en el mercado.' },
+    ].map(i=>`
+      <div style="display:flex;gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+        <div style="font-size:20px;flex-shrink:0;padding-top:2px">${i.icon}</div>
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">${i.titulo}</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">${i.texto}</div>
+        </div>
+      </div>`).join('')}
+  `;
+
+  // Timeline
+  const hitos = [
+    { mes:'Oct 2025', label:'Apertura', color:'#c8a96e', desc:'Soft landing. Calibración de operación, menú y equipo en el peor contexto macro gastronómico en décadas.' },
+    { mes:'Nov 2025', label:'Primer gran evento', color:'#7ecba1', desc:'$27.7M en un solo evento. Primera prueba de que el producto tiene capacidad de escalar con demanda puntual.' },
+    { mes:'Dic 2025', label:'Aguinaldo + baja temporada', color:'#9b8bba', desc:'Mes duro: ventas bajas ($46.9M) + aguinaldo (~$5M). Resultado ajustado -$17.3M. Contexto: todas las cadenas reportaron caída similar.' },
+    { mes:'Ene 2026', label:'Confirmación del modelo', color:'#c8a96e', desc:'$73.5M. Labor cost 32.3%, food cost 21.7%, prime cost 54%. Todos los ratios en benchmark. Tercer mes de vida.' },
+    { mes:'Feb 2026', label:'Incidente San Valentín', color:'#e07070', desc:'$4.8M devuelto + ~$5.5M perdido por cierre. Sin el incidente: $75M y resultado +$7.5M. El modelo opera.' },
+    { mes:'Mar 2026', label:'En curso', color:'#6db3d6', desc:'Dato parcial disponible. Si mantiene el rango $60–75M, el año 1 cierra en territorio positivo normalizado.' },
+  ];
+
+  document.getElementById('evol-timeline').innerHTML = `
+    <div style="position:relative;padding-left:24px">
+      <div style="position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--border)"></div>
+      ${hitos.map(h=>`
+        <div style="position:relative;margin-bottom:24px">
+          <div style="position:absolute;left:-22px;top:4px;width:12px;height:12px;border-radius:50%;background:${h.color};border:2px solid var(--bg)"></div>
+          <div style="display:flex;gap:12px;align-items:baseline;margin-bottom:4px">
+            <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:${h.color}">${h.mes}</div>
+            <div style="font-size:13px;font-weight:500;color:var(--text)">${h.label}</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">${h.desc}</div>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+// SALES DATA (from Maxirest PDFs)
+// ═══════════════════════════════════════════════════════
+const SALES = {
+  nov: {
+    total: 39102141, unidades: 2269,
+    rubros: {Comida:21008321,Cocktails:13833841,Vinos:1767296,Barra:2110683,SinAlcohol:160000,GinVodka:88000,Licores:134000},
+    cocktails: {'Ruido Blanco':[195,2594432],'Sospecha Brillante':[98,1301759],'Sabor a Ayer':[119,1579232],'Falsa Calma':[104,1357205],'Eco Interno':[63,847800],'Ausencia Lucida':[59,786423],'Advertencia Tardia':[57,760230],'Retorno Tardio':[73,945455],'Sombras Blandas':[37,494100]},
+    comida: {'PROTOCOLO 14':[106,12423193],'01. Confabulacion Guiada':[75,991623],'06. Falsa Remision':[81,1035546],'09. Agitacion Controlada':[75,977496],'08. Fragmentacion Coherente':[66,862746],'05. Disclocacion Sensorial':[58,774900],'07. Saturacion Suave':[59,769596],'03. Proyeccion Desviada':[43,568350],'04. Inversion Voluntaria':[35,450273],'02. Rumiacion Precisa':[35,463050],'13. Corteza de Recuerdo':[33,441450],'12. Dulce Silencioso':[32,426600],'10. Control de Impulsos':[24,319950],'11. Error de Clasificacion':[21,278100],'14. Realidad Saboteada':[15,198450]},
+  },
+  dic: {
+    total: 45210878, unidades: 2305,
+    rubros: {Comida:24978556,Cocktails:15286001,Vinos:1799800,Barra:2391822,SinAlcohol:305699,GinVodka:137000,Licores:312000},
+    cocktails: {'Ruido Blanco':[174,2568000],'Sospecha Brillante':[108,1582500],'Falsa Calma':[109,1599000],'Sabor a Ayer':[105,1572000],'Eco Interno':[73,1020000],'Advertencia Tardia':[58,818296],'Sombras Blandas':[55,819000],'Ausencia Lucida':[55,822000],'Retorno Tardio':[47,675000]},
+    comida: {'PROTOCOLO 14':[152,18039556],'06. Falsa Remision':[83,985500],'01. Confabulacion Guiada':[61,783000],'07. Saturacion Suave':[60,769500],'05. Disclocacion Sensorial':[56,715500],'08. Fragmentacion Coherente':[53,702000],'04. Inversion Voluntaria':[32,391500],'09. Agitacion Controlada':[39,526500],'11. Error de Clasificacion':[31,405000],'02. Rumiacion Precisa':[31,391500],'03. Proyeccion Desviada':[36,418500],'10. Control de Impulsos':[26,351000],'13. Corteza de Recuerdo':[19,243000],'12. Dulce Silencioso':[16,216000],'14. Realidad Saboteada':[3,40500]},
+  },
+  ene: {
+    total: 64338401, unidades: 2766,
+    rubros: {Comida:39445391,Cocktails:19505009,Vinos:2782000,Barra:2368001,SinAlcohol:88000,GinVodka:125000},
+    cocktails: {'Ruido Blanco':[200,2981150],'Falsa Calma':[145,2170714],'Eco Interno':[131,1950435],'Sabor a Ayer':[128,1909714],'Sospecha Brillante':[115,1714721],'Ausencia Lucida':[86,1273721],'Advertencia Tardia':[86,1277143],'Sombras Blandas':[71,1047020],'Retorno Tardio':[68,1020000]},
+    comida: {'PROTOCOLO 14':[227,29768811],'01. Confabulacion Guiada':[73,1089000],'09. Agitacion Controlada':[78,1167000],'08. Fragmentacion Coherente':[62,921000],'05. Disclocacion Sensorial':[64,955500],'02. Rumiacion Precisa':[54,807000],'06. Falsa Remision':[48,718500],'07. Saturacion Suave':[47,702000],'03. Proyeccion Desviada':[38,568500],'11. Error de Clasificacion':[34,510000],'10. Control de Impulsos':[31,459000],'04. Inversion Voluntaria':[28,418500],'12. Dulce Silencioso':[34,477027],'13. Corteza de Recuerdo':[33,463527],'14. Realidad Saboteada':[30,420027]},
+  },
+  feb: {
+    total: 58371701, unidades: 2489,
+    rubros: {Comida:34585182,Cocktails:19014652,Vinos:2915500,Barra:1665367,SinAlcohol:16000,GinVodka:150000},
+    cocktails: {'Ruido Blanco':[188,2800118],'Sospecha Brillante':[190,2836028],'Sabor a Ayer':[124,1841743],'Falsa Calma':[116,1696798],'Eco Interno':[107,1587770],'Advertencia Tardia':[74,1107688],'Ausencia Lucida':[77,1131083],'Sombras Blandas':[52,775028],'Retorno Tardio':[61,907028]},
+    comida: {'PROTOCOLO 14':[206,27583182],'06. Falsa Remision':[56,840000],'09. Agitacion Controlada':[56,840000],'01. Confabulacion Guiada':[55,825000],'08. Fragmentacion Coherente':[47,705000],'07. Saturacion Suave':[43,645000],'05. Disclocacion Sensorial':[42,630000],'02. Rumiacion Precisa':[38,570000],'11. Error de Clasificacion':[25,375000],'03. Proyeccion Desviada':[20,300000],'12. Dulce Silencioso':[22,330000],'13. Corteza de Recuerdo':[19,285000],'04. Inversion Voluntaria':[17,255000],'10. Control de Impulsos':[15,222000],'14. Realidad Saboteada':[12,180000]},
+  },
+};
+
+// ═══════════════════════════════════════════════════════
+// TAB: VENTAS POR PRODUCTO
+// ═══════════════════════════════════════════════════════
+function buildVentas() {
+  const totalVentas = MKEYS.reduce((s,k)=>s+SALES[k].total,0);
+  const totalP14 = MKEYS.reduce((s,k)=>s+SALES[k].comida['PROTOCOLO 14'][1],0);
+  const totalCocktails = MKEYS.reduce((s,k)=>s+SALES[k].rubros.Cocktails,0);
+  const avgTicket = (SALES.ene.total/SALES.ene.unidades + SALES.feb.total/SALES.feb.unidades) / 2;
+
+  document.getElementById('kpi-ventas').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Ventas Maxirest Acumuladas</div>
+      <div class="kpi-val">${fmt(totalVentas)}</div>
+      <div class="kpi-sub">4 meses · ${MKEYS.reduce((s,k)=>s+SALES[k].unidades,0).toLocaleString()} unidades</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Protocolo 14 — Total</div>
+      <div class="kpi-val pos">${fmt(totalP14)}</div>
+      <div class="kpi-sub">${(totalP14/totalVentas*100).toFixed(1)}% de las ventas totales</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Cocktails — Total</div>
+      <div class="kpi-val">${fmt(totalCocktails)}</div>
+      <div class="kpi-sub">${(totalCocktails/totalVentas*100).toFixed(1)}% de las ventas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Ticket Prom. (Ene–Feb)</div>
+      <div class="kpi-val pos">$${(avgTicket/1000).toFixed(1)}K</div>
+      <div class="kpi-sub">Por unidad / ítem vendido</div>
+    </div>
+  `;
+
+  // Protocolo 14 evolution
+  mkChart('c-p14-evol', {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Protocolo 14 ($)', data: MKEYS.map(k=>SALES[k].comida['PROTOCOLO 14'][1]),
+          backgroundColor: 'rgba(200,169,110,0.4)', borderColor: '#c8a96e', borderWidth: 1.5, yAxisID:'y' },
+        { label: 'Servicios vendidos', data: MKEYS.map(k=>SALES[k].comida['PROTOCOLO 14'][0]),
+          type:'line', borderColor: '#7ecba1', borderWidth: 2, pointRadius: 5, tension: 0.3, yAxisID:'y2' },
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom' } },
+      scales:{
+        x:{ grid:{color:GC} },
+        y:{ grid:{color:GC}, ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}, position:'left' },
+        y2:{ grid:{display:false}, ticks:{callback:v=>v+' svc'}, position:'right' }
+      }
+    }
+  });
+
+  // Protocolo 14 stats
+  document.getElementById('p14-stats').innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:16px">PROTOCOLO 14 — MÉTRICAS CLAVE</div>
+    ${MKEYS.map((k,i)=>{
+      const p = SALES[k].comida['PROTOCOLO 14'];
+      const ticket = p[1]/p[0];
+      const pctTotal = p[1]/SALES[k].total*100;
+      const pctComida = p[1]/SALES[k].rubros.Comida*100;
+      return `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:4px">${MONTHS[i]}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div><div style="font-size:16px;font-family:'Playfair Display',serif;font-weight:700">${p[0]}</div><div style="font-size:9px;color:var(--muted)">servicios</div></div>
+          <div><div style="font-size:16px;font-family:'Playfair Display',serif;font-weight:700">$${(ticket/1000).toFixed(0)}K</div><div style="font-size:9px;color:var(--muted)">ticket prom.</div></div>
+          <div><div style="font-size:16px;font-family:'Playfair Display',serif;font-weight:700;color:var(--accent)">${pctTotal.toFixed(1)}%</div><div style="font-size:9px;color:var(--muted)">del total</div></div>
+        </div>
+      </div>`;
+    }).join('')}
+    <div style="padding:12px;background:rgba(200,169,110,0.08);border:1px solid rgba(200,169,110,0.2);font-size:11px;color:var(--text);line-height:1.7">
+      El Protocolo 14 pasó de <strong style="color:var(--accent)">31.8%</strong> a <strong style="color:var(--accent)">47.3%</strong> de las ventas totales en 4 meses. 
+      El ticket subió de $117K a $134K (+14.5%). Es el motor del negocio.
+    </div>
+  `;
+
+  // Mix stacked %
+  mkChart('c-mix-stacked', {
+    type:'bar',
+    data:{
+      labels:MONTHS,
+      datasets:[
+        {label:'Comida', data:MKEYS.map(k=>(SALES[k].rubros.Comida/SALES[k].total*100).toFixed(1)), backgroundColor:'#c8a96e'},
+        {label:'Cocktails', data:MKEYS.map(k=>(SALES[k].rubros.Cocktails/SALES[k].total*100).toFixed(1)), backgroundColor:'#6db3d6'},
+        {label:'Vinos', data:MKEYS.map(k=>(SALES[k].rubros.Vinos/SALES[k].total*100).toFixed(1)), backgroundColor:'#9b8bba'},
+        {label:'Barra', data:MKEYS.map(k=>(SALES[k].rubros.Barra/SALES[k].total*100).toFixed(1)), backgroundColor:'#555'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom'}},
+      scales:{x:{stacked:true,grid:{color:GC}},y:{stacked:true,grid:{color:GC},ticks:{callback:v=>v+'%'},max:100}}
+    }
+  });
+
+  // Barra vs Cocina
+  mkChart('c-barra-cocina', {
+    type:'line',
+    data:{
+      labels:MONTHS,
+      datasets:[
+        {label:'Comida %', data:MKEYS.map(k=>(SALES[k].rubros.Comida/SALES[k].total*100).toFixed(1)),
+          borderColor:'#c8a96e', borderWidth:2.5, pointRadius:5, tension:0.3, fill:false},
+        {label:'Barra % (Cocktails+Vinos+Bar)', data:MKEYS.map(k=>((SALES[k].total-SALES[k].rubros.Comida)/SALES[k].total*100).toFixed(1)),
+          borderColor:'#6db3d6', borderWidth:2.5, pointRadius:5, tension:0.3, fill:false},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom'}},
+      scales:{x:{grid:{color:GC}},y:{grid:{color:GC},min:30,max:70,ticks:{callback:v=>v+'%'}}}
+    }
+  });
+
+  // Cocktails ranking
+  const ctTotals = {};
+  MKEYS.forEach(k=>Object.entries(SALES[k].cocktails).forEach(([n,[u,v]])=>{
+    if(!ctTotals[n]) ctTotals[n]=[0,0,[],[],[]];
+    ctTotals[n][0]+=u; ctTotals[n][1]+=v;
+    ctTotals[n][2].push(u); ctTotals[n][3].push(v);
+  }));
+  const ctSorted = Object.entries(ctTotals).sort((a,b)=>b[1][1]-a[1][1]);
+  const ctMax = ctSorted[0][1][1];
+  document.getElementById('cocktails-ranking').innerHTML = ctSorted.map(([name,[u,v,units,vals]])=>`
+    <div class="brow" style="margin-bottom:10px" ondblclick="openCocktailModal('${name}',${JSON.stringify(units)},${JSON.stringify(vals)})">
+      <div class="brow-label" style="width:140px">${name}</div>
+      <div class="brow-track"><div class="brow-fill blue" style="width:${(v/ctMax*100).toFixed(1)}%"></div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:40px;text-align:right">${u}u</div>
+      <div class="brow-val" style="width:65px">${fmt(v)}</div>
+    </div>`).join('');
+
+  // Platos ranking (sin PROTOCOLO 14)
+  const ftTotals = {};
+  MKEYS.forEach(k=>Object.entries(SALES[k].comida).filter(([n])=>n!=='PROTOCOLO 14').forEach(([n,[u,v]])=>{
+    if(!ftTotals[n]) ftTotals[n]=[0,0,[],[]];
+    ftTotals[n][0]+=u; ftTotals[n][1]+=v;
+    ftTotals[n][2].push(u); ftTotals[n][3].push(v);
+  }));
+  const ftSorted = Object.entries(ftTotals).sort((a,b)=>b[1][1]-a[1][1]);
+  const ftMax = ftSorted[0][1][1];
+  document.getElementById('platos-ranking').innerHTML = ftSorted.map(([name,[u,v,units,vals]])=>`
+    <div class="brow" style="margin-bottom:10px" ondblclick="openPlatoModal('${name}',${JSON.stringify(units)},${JSON.stringify(vals)})">
+      <div class="brow-label" style="width:155px;font-size:10px">${name.replace(/^\d+\. /,'')}</div>
+      <div class="brow-track"><div class="brow-fill" style="width:${(v/ftMax*100).toFixed(1)}%"></div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:40px;text-align:right">${u}u</div>
+      <div class="brow-val" style="width:65px">${fmt(v)}</div>
+    </div>`).join('');
+
+  // Ticket promedio + unidades
+  mkChart('c-ticket-evol', {
+    type:'bar',
+    data:{
+      labels:MONTHS,
+      datasets:[
+        {label:'Unidades vendidas', data:MKEYS.map(k=>SALES[k].unidades),
+          backgroundColor:'rgba(109,179,214,0.3)', borderColor:'#6db3d6', borderWidth:1.5, yAxisID:'y2'},
+        {label:'Ticket promedio ($)', data:MKEYS.map(k=>Math.round(SALES[k].total/SALES[k].unidades)),
+          type:'line', borderColor:'#c8a96e', borderWidth:2.5, pointRadius:5, tension:0.3, yAxisID:'y'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom'}},
+      scales:{
+        x:{grid:{color:GC}},
+        y:{grid:{color:GC},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K'},position:'left'},
+        y2:{grid:{display:false},ticks:{callback:v=>v+' u'},position:'right'}
+      }
+    }
+  });
+
+  // Gap analysis
+  const plTotals = {nov:71599105, dic:46937122, ene:73470700, feb:69483700};
+  document.getElementById('gap-analysis').innerHTML = `
+    <table class="tree-table"><thead><tr>
+      <th>Mes</th><th class="r">Maxirest</th><th class="r">P&L Total</th><th class="r">Gap</th><th>Explicación probable</th>
+    </tr></thead><tbody>
+    ${MKEYS.map((k,i)=>{
+      const gap = plTotals[k] - SALES[k].total;
+      const pct = (gap/plTotals[k]*100).toFixed(1);
+      const nota = {
+        nov:'$27.7M evento + $4.8M no capturado en Maxirest (efectivo caja, pagos directos)',
+        dic:'Gap mínimo ($1.7M). Mes más "puro" de los 4.',
+        ene:'$9.1M gap — posiblemente efectivo y pagos fuera del sistema POS',
+        feb:'$11.1M gap — incluye devoluciones San Valentín no reflejadas en Maxirest'
+      }[k];
+      return `<tr>
+        <td>${MONTHS[i]}</td>
+        <td class="r">${fmt(SALES[k].total)}</td>
+        <td class="r">${fmt(plTotals[k])}</td>
+        <td class="r" style="color:${gap>5e6?'var(--red)':gap>2e6?'var(--accent)':'var(--green)'}">${fmt(gap)} (${pct}%)</td>
+        <td style="font-size:10px;color:var(--muted)">${nota}</td>
+      </tr>`;
+    }).join('')}
+    </tbody></table>
+    <div style="padding:16px;margin-top:12px;background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15);font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8">
+      ⚠️ <strong style="color:var(--accent)">Recomendación:</strong> El gap de $9–11M en ene/feb merece auditoría. 
+      Parte es efectivo legítimo no procesado por POS. Pero asegurate de que todo el efectivo 
+      pase por caja y quede registrado. En gastronomía, gaps >10% sobre ventas POS son una señal de alerta operativa.
+    </div>
+  `;
+}
+
+function openCocktailModal(name, units, vals) {
+  let body = `<div class="chart-wrap" style="height:200px"><canvas id="modal-ct-chart"></canvas></div><br>`;
+  body += `<table class="tree-table"><thead><tr><th>Mes</th><th class="r">Unidades</th><th class="r">Venta</th><th class="r">Ticket</th></tr></thead><tbody>`;
+  MONTHS.forEach((m,i)=>{ body += `<tr><td>${m}</td><td class="r">${units[i]||0}</td><td class="r">${fmt(vals[i]||0)}</td><td class="r">$${units[i]?(vals[i]/units[i]/1000).toFixed(1)+'K':'—'}</td></tr>`; });
+  const total = (vals||[]).reduce((a,b)=>a+b,0);
+  const totalU = (units||[]).reduce((a,b)=>a+b,0);
+  body += `<tr class="row-total"><td>Total</td><td class="r">${totalU}</td><td class="r"><strong>${fmt(total)}</strong></td><td class="r">$${totalU?(total/totalU/1000).toFixed(1)+'K':'—'}</td></tr>`;
+  body += '</tbody></table>';
+  showModal(name, 'Evolución mensual — cocktail', body);
+  setTimeout(()=>{
+    mkChart('modal-ct-chart',{type:'bar',data:{labels:MONTHS,datasets:[{label:name,data:vals,backgroundColor:'rgba(109,179,214,.4)',borderColor:'#6db3d6',borderWidth:1.5}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:GC}},y:{grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(1)+'M'}}}}});
+  },50);
+}
+
+function openPlatoModal(name, units, vals) {
+  let body = `<div class="chart-wrap" style="height:200px"><canvas id="modal-ft-chart"></canvas></div><br>`;
+  body += `<table class="tree-table"><thead><tr><th>Mes</th><th class="r">Unidades</th><th class="r">Venta</th><th class="r">Ticket</th></tr></thead><tbody>`;
+  MONTHS.forEach((m,i)=>{ body += `<tr><td>${m}</td><td class="r">${units[i]||0}</td><td class="r">${fmt(vals[i]||0)}</td><td class="r">$${units[i]?(vals[i]/units[i]/1000).toFixed(1)+'K':'—'}</td></tr>`; });
+  const total = (vals||[]).reduce((a,b)=>a+b,0);
+  const totalU = (units||[]).reduce((a,b)=>a+b,0);
+  body += `<tr class="row-total"><td>Total</td><td class="r">${totalU}</td><td class="r"><strong>${fmt(total)}</strong></td><td class="r">$${totalU?(total/totalU/1000).toFixed(1)+'K':'—'}</td></tr>`;
+  body += '</tbody></table>';
+  showModal(name.replace(/^\d+\. /,''), 'Evolución mensual — plato', body);
+  setTimeout(()=>{
+    mkChart('modal-ft-chart',{type:'bar',data:{labels:MONTHS,datasets:[{label:name,data:vals,backgroundColor:'rgba(200,169,110,.4)',borderColor:'#c8a96e',borderWidth:1.5}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:GC}},y:{grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(1)+'M'}}}}});
+  },50);
+}
+
+// ═══════════════════════════════════════════════════════
 // TAB ROUTER
 // ═══════════════════════════════════════════════════════
 const built = {};
@@ -919,6 +1918,10 @@ function goTab(id, el) {
   if(id==='egresos'){ buildEgPills(); buildEgresosMesKpis(); buildEgDonut(); buildEgLine(); buildEgTable(); }
   if(id==='empleados'){ buildEmpPills(); buildEmpKpis(); buildEmpBar(); buildEmpTopBars(); buildEmpTable(); }
   if(id==='mensual'){ buildMesPills(); buildMesView(); }
+  if(id==='benchmarks') buildBenchmarks();
+  if(id==='oportunidades') buildOportunidades();
+  if(id==='evolucion') buildEvolucion();
+  if(id==='ventas') buildVentas();
 }
 
 // ═══════════════════════════════════════════════════════
