@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sawyer — P&L Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0c0c0c;
+  --surface: #141414;
+  --surface2: #1c1c1c;
+  --border: #272727;
+  --accent: #c8a96e;
+  --accent-dim: rgba(200,169,110,0.15);
+  --green: #7ecba1;
+  --red: #e07070;
+  --blue: #6db3d6;
+  --purple: #9b8bba;
+  --text: #ede8dc;
+  --muted: #6a6050;
+  --hover: #1f1d18;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+/* HEADER */
+header {
+  padding: 36px 56px 28px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(160deg, #1a1510 0%, #0c0c0c 60%);
+}
+.logo { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 900; color: var(--accent); line-height: 1; }
+.logo small { display: block; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 300; color: var(--muted); letter-spacing: 4px; text-transform: uppercase; margin-top: 6px; }
+.header-right { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-align: right; line-height: 1.8; }
+
+/* TABS */
+.tabs { display: flex; padding: 0 56px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.tab { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); padding: 14px 22px; cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* MAIN */
+.main { padding: 40px 56px; max-width: 1600px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* KPI GRID */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); padding: 24px 22px; position: relative; overflow: hidden; transition: border-color .2s; cursor: default; }
+.kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .3s; }
+.kpi:hover { border-color: #3a3028; }
+.kpi:hover::before { transform: scaleX(1); }
+.kpi-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.kpi-val { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1; }
+.kpi-val.pos { color: var(--green); }
+.kpi-val.neg { color: var(--red); }
+.kpi-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 7px; }
+
+/* GRID LAYOUTS */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-21 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-12 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 20px; }
+
+/* BOX */
+.box { background: var(--surface); border: 1px solid var(--border); padding: 28px; }
+.box-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+.chart-wrap { position: relative; width: 100%; }
+
+/* MONTH PILLS */
+.month-pills { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+.pill { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); background: var(--surface); border: 1px solid var(--border); padding: 7px 14px; cursor: pointer; transition: all .2s; }
+.pill:hover { color: var(--text); border-color: var(--muted); }
+.pill.active { color: var(--accent); border-color: var(--accent); background: rgba(200,169,110,0.08); }
+
+/* TREE TABLE — drill down */
+.tree-table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 11px; }
+.tree-table th { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+.tree-table th.r { text-align: right; }
+.tree-table td { padding: 9px 10px; border-bottom: 1px solid #181818; color: var(--text); vertical-align: middle; }
+.tree-table td.r { text-align: right; }
+.tree-table td.muted { color: var(--muted); }
+
+/* Category rows */
+.row-cat td { color: var(--accent) !important; background: rgba(200,169,110,0.06); font-weight: 500; cursor: pointer; user-select: none; }
+.row-cat:hover td { background: rgba(200,169,110,0.12) !important; }
+.row-cat td:first-child::before { content: '▸ '; font-size: 10px; color: var(--accent); transition: transform .2s; display: inline-block; }
+.row-cat.open td:first-child::before { content: '▾ '; }
+
+/* Sub rows */
+.row-sub { display: none; }
+.row-sub td { padding-left: 28px; color: #9a9080 !important; font-size: 10px; background: transparent; }
+.row-sub td:first-child { color: #8a8070 !important; }
+.row-sub.visible { display: table-row; }
+.row-sub:hover td { background: var(--hover) !important; }
+
+/* Sub-sub rows */
+.row-subsub { display: none; }
+.row-subsub td { padding-left: 48px; color: #6a6050 !important; font-size: 10px; background: transparent; }
+.row-subsub.visible { display: table-row; }
+.row-subsub:hover td { background: var(--hover) !important; }
+
+/* Totals */
+.row-total td { background: rgba(255,255,255,0.03); border-top: 1px solid var(--border); }
+.row-total-big td { background: rgba(200,169,110,0.06); border-top: 2px solid rgba(200,169,110,0.3); font-size: 12px; }
+
+/* Positive / Negative badges */
+.badge { display: inline-block; font-size: 9px; letter-spacing: 1px; padding: 2px 7px; border-radius: 2px; }
+.badge.pos { background: rgba(126,203,161,.15); color: var(--green); border: 1px solid rgba(126,203,161,.3); }
+.badge.neg { background: rgba(224,112,112,.15); color: var(--red); border: 1px solid rgba(224,112,112,.3); }
+
+/* SPARK BAR inside table */
+.spark-bar { display: inline-block; height: 3px; border-radius: 1px; vertical-align: middle; margin-left: 6px; }
+
+/* Bar rows */
+.brow { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.brow-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); flex: 0 0 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brow-track { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.brow-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 1s ease; }
+.brow-fill.green { background: var(--green); }
+.brow-fill.red { background: var(--red); }
+.brow-fill.blue { background: var(--blue); }
+.brow-val { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text); flex: 0 0 80px; text-align: right; }
+
+/* TOOLTIP */
+.tt { position: absolute; background: #1e1a14; border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; padding: 8px 12px; pointer-events: none; z-index: 100; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+
+/* hint */
+.hint { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
+.hint span { color: var(--accent); }
+
+@media (max-width: 900px) {
+  header { padding: 24px 20px; flex-direction: column; gap: 10px; }
+  .tabs, .main { padding-left: 20px; padding-right: 20px; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .grid-2, .grid-21, .grid-12, .grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Sawyer
+    <small>P&L · Agosto 2025 — Marzo 2026</small>
+  </div>
+  <div class="header-right">
+    Dashboard Financiero<br>
+    Pesos Argentinos (ARS)<br>
+    <span style="color:var(--accent)">Doble click para desglosar ▸</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab active"   onclick="goTab('resumen',this)">Resumen</div>
+  <div class="tab"          onclick="goTab('ingresos',this)">Ingresos</div>
+  <div class="tab"          onclick="goTab('egresos',this)">Egresos</div>
+  <div class="tab"          onclick="goTab('empleados',this)">Empleados</div>
+  <div class="tab"          onclick="goTab('mensual',this)">Mes a Mes</div>
+</nav>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════
+     TAB: RESUMEN
+══════════════════════════════════════════════════ -->
+<div class="section active" id="tab-resumen">
+  <div class="kpi-row" id="kpi-resumen"></div>
+  <div class="grid-21">
+    <div class="box">
+      <div class="box-title">Ingresos · Egresos · Resultado — evolución mensual</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-resumen-main"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Estructura de costos promedio</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-resumen-donut"></canvas></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Composición % de egresos por mes</div>
+    <div class="chart-wrap" style="height:220px"><canvas id="c-resumen-stacked"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB: INGRESOS
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-ingresos">
+  <div class="kpi-row" id="kpi-ingresos"></div>
+  <div class="grid-21">
+    <div class="box">
+      <div class="box-title">Ingresos por canal — apilado mensual</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-ing-stacked"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Mix de canales promedio</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-ing-donut"></canvas></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Detalle por mes — doble click para expandir canal</div>
+    <p class="hint" style="margin-top:4px"><span>▸</span> Hacé doble click en cualquier fila para ver el detalle</p>
+    <div id="ing-table-wrap"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB: EGRESOS
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-egresos">
+  <div class="month-pills" id="pills-egresos"></div>
+  <div class="kpi-row" id="kpi-egresos"></div>
+  <div class="grid-21">
+    <div class="box">
+      <div class="box-title">Egresos por categoría — evolución</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-eg-line"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Distribución del mes seleccionado</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-eg-donut"></canvas></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Desglose completo — doble click para expandir</div>
+    <p class="hint"><span>▸</span> Hacé doble click en una categoría para ver cada proveedor / concepto</p>
+    <div id="eg-table-wrap"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB: EMPLEADOS
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-empleados">
+  <div class="month-pills" id="pills-emp"></div>
+  <div class="kpi-row" id="kpi-emp"></div>
+  <div class="grid-21">
+    <div class="box">
+      <div class="box-title">Masa salarial mensual (neto + cargas)</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-emp-bar"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Top empleados — mes seleccionado</div>
+      <div id="emp-bars-wrap" style="padding-top:4px"></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Detalle por persona — doble click para ver evolución mensual</div>
+    <p class="hint"><span>▸</span> Hacé doble click en un empleado para ver su historial</p>
+    <div id="emp-table-wrap"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB: MES A MES
+══════════════════════════════════════════════════ -->
+<div class="section" id="tab-mensual">
+  <div class="month-pills" id="pills-mes"></div>
+  <div class="kpi-row" id="kpi-mes"></div>
+  <div class="grid-2">
+    <div class="box">
+      <div class="box-title">Ingresos por canal</div>
+      <div id="mes-ing-bars"></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Egresos por categoría</div>
+      <div id="mes-eg-bars"></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="box">
+      <div class="box-title">Materia Prima — detalle proveedores</div>
+      <div id="mes-mp-bars"></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Top 10 empleados del mes</div>
+      <div id="mes-emp-bars"></div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-title">Observación analítica</div>
+    <div id="mes-nota" style="padding: 16px 0; font-size:14px; line-height:1.8; color:var(--text)"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ══════════════════════════════════════════════════════
+     DRILL-DOWN MODAL
+══════════════════════════════════════════════════════ -->
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;" onclick="closeModal(event)">
+  <div id="modal-box" style="background:#161412;border:1px solid #333;padding:36px;width:680px;max-width:95vw;max-height:85vh;overflow-y:auto;position:relative">
+    <button onclick="closeModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+    <div id="modal-title" style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--accent);margin-bottom:4px"></div>
+    <div id="modal-sub" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:24px"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const MONTHS = ["Nov '25","Dic '25","Ene '26","Feb '26"];
+const MKEYS  = ["nov","dic","ene","feb"];
+
+const D = {
+  nov: {
+    label:"Noviembre 2025",
+    ingresos:71599105, egresos:55397656, resultado:16201449,
+    // income
+    tarjeta:36367265, efectivo:6781900, mp:447000, meitre:302940, ecommerce:0, pedidosya_t:0, pedidosya_e:0, otros:27700000,
+    // expense cats
+    matPrima:12415004, gasVar:1213181, empleados:27947685, impuestos:6567564, estructura:7254222,
+    // mat prima detail
+    quilmes:0,
+    barra:{ total:3135962, Chandon:544184, Branca:0, CatenaZapata:570975, Savage:0, BarraVarios:0, CocaCola:413300, Hielo:1010020, DistSquverain:597483 },
+    cocina:{ total:9279041, TodoCarne:1408472, FrescoPez:1415430, KimHeeYoung:0, EmporioLanus:1977154, BuenosMares:0, Supermercado:942960, NuevaCasaChina:504985, SaboresArg:674105, Verduleria:2355935, Cafe:0 },
+    // gastos var
+    gv:{ Publicidad:0, MantenArreglos:118580, BienesProductos:0, Papeleria:0, GastosVarios:313111, Fumigacion:162400, Lavadero:0, Ferreteria:0, Limpieza:619090, Ivess:0 },
+    // empleados
+    emp: { GastonAbramoff:1600000, MarianoGechi:1600000, Rulo:1100000, Camila:1000000, Victor:0, Rafael:1250000, Esmeralda:800000, Fabricio:750000, Araceli:980145, Florencia:1015718, Micaela:830000, Paul:830000, Diego:830000, Nazarena:1000000, Evelyn:600000, Aaron:700000, Gabriela:541667, FabianConti:261000, Cecilia:800000, PabloDiseñador:300000, DJ:733000, RRHH:0, Damian:1100000, EmpleadosExtras:1581000, CargasSociales:5199656, Autonomos:0, Sindicatos:629500, LiquidacionAbogados:0, RRPP:1916000 },
+    // impuestos
+    imp:{ MercadoPagoComis:35760, ComisionTarjetas:909182, GastosBancarios:667928, Ganancias:0, IIBB:1454691, IVA:3500004 },
+    // estructura
+    est:{ Alquiler:5656172, Luz:873205, Agua:0, Gas:3958, Telefono:0, Telecentro:0, Seguros:387468, MaxiRest:149900, ABL:183519 },
+    nota:"Noviembre incluye <strong>$27.7M en 'Otros'</strong> — ingreso atípico. Sin ese ítem el resultado hubiera sido negativo ($-11.5M). La estructura de costos es la más liviana del período, reflejando que los sueldos todavía no escalaron a los valores de diciembre."
+  },
+  dic: {
+    label:"Diciembre 2025",
+    ingresos:46937122, egresos:69236738, resultado:-22299616,
+    tarjeta:36715442, efectivo:8882880, mp:848800, meitre:0, ecommerce:0, pedidosya_t:0, pedidosya_e:0, otros:490000,
+    matPrima:14576843, gasVar:7752137, empleados:30211472, impuestos:8598134, estructura:8098152,
+    quilmes:646200,
+    barra:{ total:3978467, Chandon:1341250, Branca:0, CatenaZapata:565150, Savage:0, BarraVarios:80400, CocaCola:129000, Hielo:1263450, DistSquverain:599217 },
+    cocina:{ total:9952176, TodoCarne:1610449, FrescoPez:985813, KimHeeYoung:0, EmporioLanus:2494195, BuenosMares:0, Supermercado:1538610, NuevaCasaChina:1047240, SaboresArg:418612, Verduleria:1857257, Cafe:0 },
+    gv:{ Publicidad:3800000, MantenArreglos:786500, BienesProductos:442154, Papeleria:696915, GastosVarios:682418, Fumigacion:182400, Lavadero:0, Ferreteria:70600, Limpieza:796150, Ivess:45000 },
+    emp:{ GastonAbramoff:0, MarianoGechi:1500000, Rulo:1950000, Camila:333333, Victor:0, Rafael:1770833, Esmeralda:1133333, Fabricio:1062500, Eliana:1800000, Trinidad:800000, Micaela:1175833, Paul:1175833, Diego:1175833, Nazarena:1500000, Evelyn:900000, Aaron:605333, Gabriela:722222, FabianConti:267500, Cecilia:700000, PabloDiseñador:300000, DJ:1630000, RRHH:0, Damian:1100000, EmpleadosExtras:1484500, CargasSociales:5602417, Autonomos:0, Sindicatos:592000, LiquidacionAbogados:0, RRPP:930000 },
+    imp:{ MercadoPagoComis:67904, ComisionTarjetas:2937235, GastosBancarios:494979, Ganancias:0, IIBB:1468618, IVA:3629398 },
+    est:{ Alquiler:5656172, Luz:1688633, Agua:0, Gas:4118, Telefono:0, Telecentro:0, Seguros:410310, MaxiRest:149900, ABL:189018 },
+    nota:"<strong>Peor mes del período</strong>, con pérdida de $22.3M. Los gastos variables se dispararon 6x respecto a noviembre, impulsados por publicidad ($3.8M), papelería ($697K) y mantenimiento ($787K). Además la masa salarial tocó su máximo histórico ($30.2M)."
+  },
+  ene: {
+    label:"Enero 2026",
+    ingresos:73470700, egresos:67505423, resultado:5965277,
+    tarjeta:63391900, efectivo:9283800, mp:0, meitre:0, ecommerce:0, pedidosya_t:0, pedidosya_e:0, otros:795000,
+    matPrima:15967000, gasVar:7579852, empleados:23743695, impuestos:11491456, estructura:8723419,
+    quilmes:541000,
+    barra:{ total:2929364, Chandon:1264518, Branca:0, CatenaZapata:733346, Savage:0, BarraVarios:0, CocaCola:171100, Hielo:760400, DistSquverain:0 },
+    cocina:{ total:12496636, TodoCarne:1765378, FrescoPez:1665047, KimHeeYoung:0, EmporioLanus:2823710, BuenosMares:0, Supermercado:1537335, NuevaCasaChina:1694760, SaboresArg:642650, Verduleria:2367757, Cafe:0 },
+    gv:{ Publicidad:2300000, MantenArreglos:135000, BienesProductos:219508, Papeleria:0, GastosVarios:2490694, Fumigacion:182400, Lavadero:0, Ferreteria:24700, Limpieza:898550, Ivess:0 },
+    emp:{ GastonAbramoff:0, MarianoGechi:0, Rulo:1300000, Camila:0, Victor:0, Rafael:1500000, Esmeralda:800000, Fabricio:750000, Eliana:1800000, Trinidad:800000, Micaela:830000, Paul:830000, Diego:830000, Nazarena:1000000, Evelyn:600000, Aaron:0, Gabriela:650000, FabianConti:275000, Cecilia:0, PabloDiseñador:300000, DJ:810000, RRHH:0, Damian:1100000, EmpleadosExtras:4089000, CargasSociales:4810375, Autonomos:0, Sindicatos:669320, LiquidacionAbogados:0, RRPP:0 },
+    imp:{ MercadoPagoComis:0, ComisionTarjetas:5071352, GastosBancarios:494979, Ganancias:0, IIBB:2535676, IVA:3389449 },
+    est:{ Alquiler:5656172, Luz:2133281, Agua:0, Gas:72890, Telefono:0, Telecentro:111847, Seguros:410310, MaxiRest:149900, ABL:189018 },
+    nota:"<strong>Mejor mes del período</strong>: ingresos récord de $73.5M con la masa salarial más baja ($23.7M). El aumento en comisiones de tarjetas (+$2.1M vs diciembre) refleja el crecimiento de ventas. El costo de cocina escala proporcionalmente con las ventas, señal de que no hay ineficiencias ocultas en ese rubro."
+  },
+  feb: {
+    label:"Febrero 2026",
+    ingresos:69483700, egresos:72243066, resultado:-2759366,
+    tarjeta:60574700, efectivo:8609000, mp:0, meitre:0, ecommerce:0, pedidosya_t:0, pedidosya_e:0, otros:300000,
+    matPrima:20630717, gasVar:6524724, empleados:23524516, impuestos:12839033, estructura:8724076,
+    quilmes:565738,
+    barra:{ total:5775048, Chandon:720241, Branca:2131112, CatenaZapata:0, Savage:0, BarraVarios:0, CocaCola:245100, Hielo:1157170, DistSquverain:1521424 },
+    cocina:{ total:14289932, TodoCarne:2120104, FrescoPez:1900898, KimHeeYoung:0, EmporioLanus:3497567, BuenosMares:0, Supermercado:1177110, NuevaCasaChina:1421937, SaboresArg:601120, Verduleria:3571196, Cafe:0 },
+    gv:{ Publicidad:1500000, MantenArreglos:625200, BienesProductos:194892, Papeleria:1254441, GastosVarios:944011, Fumigacion:0, Lavadero:0, Ferreteria:0, Limpieza:786180, Ivess:0 },
+    emp:{ GastonAbramoff:0, MarianoGechi:0, Rulo:1386667, Camila:90000, Victor:0, Rafael:1550000, Esmeralda:906666, Fabricio:875000, Eliana:1920000, Trinidad:853334, Micaela:885334, Paul:885334, Diego:691666, Nazarena:1100000, Evelyn:856000, Aaron:0, Gabriela:955000, FabianConti:283000, Cecilia:0, PabloDiseñador:0, DJ:510000, RRHH:0, Damian:1100000, EmpleadosExtras:3150000, CargasSociales:4857195, Autonomos:0, Sindicatos:669320, LiquidacionAbogados:0, RRPP:0 },
+    imp:{ MercadoPagoComis:0, ComisionTarjetas:4845976, GastosBancarios:494979, Ganancias:0, IIBB:2422988, IVA:5075090 },
+    est:{ Alquiler:6086177, Luz:1718564, Agua:0, Gas:54436, Telefono:0, Telecentro:117000, Seguros:410310, MaxiRest:149900, ABL:187690 },
+    nota:"La <strong>materia prima creció 29% vs enero</strong> (+$4.7M) con ingresos similares. La barra casi duplicó su costo, impulsada por Branca ($2.1M, que en enero era cero) y Distribuidora Squverain ($1.5M). El IVA también saltó a $5M, el más alto del período. Señales de alerta en el control de costos de barra."
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const fmt = (n,dec=0) => {
+  if (!n || n===0) return '—';
+  const s = Math.abs(n);
+  if (s>=1e6) return (n<0?'-':'') + '$' + (s/1e6).toFixed(dec||1)+'M';
+  if (s>=1e3) return (n<0?'-':'') + '$' + (s/1e3).toFixed(0)+'K';
+  return (n<0?'-':'') + '$' + s.toLocaleString('es-AR',{maximumFractionDigits:0});
+};
+const pct = (v,t) => t ? (v/t*100).toFixed(1)+'%' : '—';
+const sign = n => n>=0 ? '<span class="badge pos">▲</span>' : '<span class="badge neg">▼</span>';
+const clr = n => n>=0 ? 'pos' : 'neg';
+
+const GC = '#232323';
+Chart.defaults.color = '#6a6050';
+Chart.defaults.font.family = 'DM Mono, monospace';
+Chart.defaults.font.size = 10;
+
+let charts = {};
+function mkChart(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+  return charts[id];
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB: RESUMEN
+// ═══════════════════════════════════════════════════════
+function buildResumen() {
+  // KPIs
+  const totalIng = MKEYS.reduce((s,k)=>s+D[k].ingresos,0);
+  const totalEg  = MKEYS.reduce((s,k)=>s+D[k].egresos,0);
+  const totalRes = MKEYS.reduce((s,k)=>s+D[k].resultado,0);
+  const bestM = MKEYS.reduce((b,k)=> D[k].resultado > D[b].resultado ? k : b, MKEYS[0]);
+  const worstM = MKEYS.reduce((b,k)=> D[k].resultado < D[b].resultado ? k : b, MKEYS[0]);
+
+  document.getElementById('kpi-resumen').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Ingresos Totales (4 meses)</div><div class="kpi-val">${fmt(totalIng)}</div><div class="kpi-sub">Nov'25 – Feb'26</div></div>
+    <div class="kpi"><div class="kpi-label">Egresos Totales</div><div class="kpi-val neg">${fmt(totalEg)}</div><div class="kpi-sub">Costos + Impuestos</div></div>
+    <div class="kpi"><div class="kpi-label">Resultado Neto</div><div class="kpi-val ${clr(totalRes)}">${fmt(totalRes)}</div><div class="kpi-sub">Acumulado 4 meses</div></div>
+    <div class="kpi"><div class="kpi-label">Mejor / Peor Mes</div><div class="kpi-val" style="font-size:18px">${D[bestM].label.split(' ')[0]} / ${D[worstM].label.split(' ')[0]}</div><div class="kpi-sub">${fmt(D[bestM].resultado)} / ${fmt(D[worstM].resultado)}</div></div>
+  `;
+
+  // Main chart
+  mkChart('c-resumen-main',{type:'bar',data:{
+    labels:MONTHS,
+    datasets:[
+      {label:'Ingresos',data:MKEYS.map(k=>D[k].ingresos),backgroundColor:'rgba(200,169,110,.2)',borderColor:'#c8a96e',borderWidth:1.5},
+      {label:'Egresos',data:MKEYS.map(k=>D[k].egresos),backgroundColor:'rgba(224,112,112,.15)',borderColor:'#e07070',borderWidth:1.5},
+      {label:'Resultado',data:MKEYS.map(k=>D[k].resultado),type:'line',borderColor:'#7ecba1',borderWidth:2,
+        pointBackgroundColor:MKEYS.map(k=>D[k].resultado>=0?'#7ecba1':'#e07070'),pointRadius:5,tension:.3,yAxisID:'y'}
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom'}},
+    scales:{x:{grid:{color:GC}},y:{grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}}
+  });
+
+  // Donut avg cost
+  const cats = ['Mat. Prima','Gastos Var.','Empleados','Impuestos','Estructura'];
+  const avgs = ['matPrima','gasVar','empleados','impuestos','estructura'].map(k=>MKEYS.reduce((s,m)=>s+D[m][k],0)/4);
+  mkChart('c-resumen-donut',{type:'doughnut',data:{
+    labels:cats,
+    datasets:[{data:avgs,backgroundColor:['#c8a96e','#6db3d6','#e07070','#9b8bba','#7ecba1'],borderColor:'#141414',borderWidth:3}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14}},
+    tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)+' ('+pct(ctx.raw,ctx.dataset.data.reduce((a,b)=>a+b,0))+')'}}}}}
+  );
+
+  // Stacked % 
+  const catKeys = ['matPrima','gasVar','empleados','impuestos','estructura'];
+  mkChart('c-resumen-stacked',{type:'bar',data:{
+    labels:MONTHS,
+    datasets:[
+      {label:'Mat. Prima',data:MKEYS.map(k=>(D[k].matPrima/D[k].egresos*100).toFixed(1)),backgroundColor:'#c8a96e'},
+      {label:'Gastos Var.',data:MKEYS.map(k=>(D[k].gasVar/D[k].egresos*100).toFixed(1)),backgroundColor:'#6db3d6'},
+      {label:'Empleados',data:MKEYS.map(k=>(D[k].empleados/D[k].egresos*100).toFixed(1)),backgroundColor:'#e07070'},
+      {label:'Impuestos',data:MKEYS.map(k=>(D[k].impuestos/D[k].egresos*100).toFixed(1)),backgroundColor:'#9b8bba'},
+      {label:'Estructura',data:MKEYS.map(k=>(D[k].estructura/D[k].egresos*100).toFixed(1)),backgroundColor:'#7ecba1'},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom'}},
+    scales:{x:{stacked:true,grid:{color:GC}},y:{stacked:true,grid:{color:GC},ticks:{callback:v=>v+'%'},max:100}}}}
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB: INGRESOS
+// ═══════════════════════════════════════════════════════
+function buildIngresos() {
+  const avgIng = MKEYS.reduce((s,k)=>s+D[k].ingresos,0)/4;
+  const maxM = MKEYS.reduce((b,k)=>D[k].ingresos>D[b].ingresos?k:b, MKEYS[0]);
+  document.getElementById('kpi-ingresos').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Promedio Mensual</div><div class="kpi-val">${fmt(avgIng)}</div><div class="kpi-sub">Promedio 4 meses</div></div>
+    <div class="kpi"><div class="kpi-label">Canal Dominante</div><div class="kpi-val" style="font-size:18px">Tarjeta Local</div><div class="kpi-sub">~88% del total</div></div>
+    <div class="kpi"><div class="kpi-label">Mejor Mes</div><div class="kpi-val pos">${D[maxM].label.split(' ')[0]}</div><div class="kpi-sub">${fmt(D[maxM].ingresos)}</div></div>
+    <div class="kpi"><div class="kpi-label">Canales Digitales</div><div class="kpi-val neg" style="font-size:18px">Sin datos</div><div class="kpi-sub">PedidosYa · ecommerce</div></div>
+  `;
+
+  mkChart('c-ing-stacked',{type:'bar',data:{
+    labels:MONTHS,
+    datasets:[
+      {label:'Local Tarjeta',data:MKEYS.map(k=>D[k].tarjeta),backgroundColor:'#c8a96e'},
+      {label:'Local Efectivo',data:MKEYS.map(k=>D[k].efectivo),backgroundColor:'#9b7a40'},
+      {label:'Mercado Pago',data:MKEYS.map(k=>D[k].mp),backgroundColor:'#7ecba1'},
+      {label:'Meitre',data:MKEYS.map(k=>D[k].meitre),backgroundColor:'#6db3d6'},
+      {label:'Otros',data:MKEYS.map(k=>D[k].otros),backgroundColor:'#555'},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom'}},
+    scales:{x:{stacked:true,grid:{color:GC}},y:{stacked:true,grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}
+  }});
+
+  const canalTotals = {
+    'Local Tarjeta':MKEYS.reduce((s,k)=>s+D[k].tarjeta,0),
+    'Local Efectivo':MKEYS.reduce((s,k)=>s+D[k].efectivo,0),
+    'Mercado Pago':MKEYS.reduce((s,k)=>s+D[k].mp,0),
+    'Meitre':MKEYS.reduce((s,k)=>s+D[k].meitre,0),
+    'Otros':MKEYS.reduce((s,k)=>s+D[k].otros,0),
+  };
+  mkChart('c-ing-donut',{type:'doughnut',data:{
+    labels:Object.keys(canalTotals),
+    datasets:[{data:Object.values(canalTotals),backgroundColor:['#c8a96e','#9b7a40','#7ecba1','#6db3d6','#555'],borderColor:'#141414',borderWidth:3}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14}},
+    tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)+' ('+pct(ctx.raw,ctx.dataset.data.reduce((a,b)=>a+b,0))+')'}}}
+  }});
+
+  // Table with drill-down per channel per month
+  const canales = [
+    {key:'ingresos',label:'TOTAL INGRESOS',cat:true,children:['tarjeta','efectivo','mp','meitre','ecommerce','pedidosya_t','pedidosya_e','otros']},
+    {key:'tarjeta',label:'Local Tarjeta',indent:1},
+    {key:'efectivo',label:'Local Efectivo',indent:1},
+    {key:'mp',label:'Mercado Pago',indent:1},
+    {key:'meitre',label:'Meitre',indent:1},
+    {key:'ecommerce',label:'eCommerce',indent:1},
+    {key:'pedidosya_t',label:'PedidosYa Tarjeta',indent:1},
+    {key:'pedidosya_e',label:'PedidosYa Efectivo',indent:1},
+    {key:'otros',label:'Otros',indent:1},
+  ];
+
+  let html = `<table class="tree-table"><thead><tr>
+    <th>Canal</th>${MONTHS.map(m=>`<th class="r">${m}</th>`).join('')}<th class="r">Total</th><th class="r">% del Total</th>
+  </tr></thead><tbody>`;
+
+  const grandTotal = MKEYS.reduce((s,k)=>s+D[k].ingresos,0);
+
+  canales.forEach(c=>{
+    const vals = MKEYS.map(k=>D[k][c.key]||0);
+    const total = vals.reduce((a,b)=>a+b,0);
+    if(c.cat){
+      html += `<tr class="row-cat" ondblclick="toggleIngRow('${c.key}')">
+        <td>${c.label}</td>${vals.map(v=>`<td class="r">${fmt(v)}</td>`).join('')}
+        <td class="r">${fmt(total)}</td><td class="r">100%</td></tr>`;
+    } else {
+      html += `<tr class="row-sub" id="ing-row-${c.key}" ondblclick="openIngModal('${c.key}')">
+        <td>${c.label}</td>${vals.map(v=>`<td class="r">${fmt(v)}</td>`).join('')}
+        <td class="r">${fmt(total)}</td><td class="r">${pct(total,grandTotal)}</td></tr>`;
+    }
+  });
+  html += '</tbody></table>';
+  document.getElementById('ing-table-wrap').innerHTML = html;
+}
+
+let ingOpen = false;
+function toggleIngRow(key) {
+  ingOpen = !ingOpen;
+  document.querySelectorAll('#tab-ingresos .row-cat').forEach(r => r.classList.toggle('open', ingOpen));
+  document.querySelectorAll('#tab-ingresos .row-sub').forEach(r => r.classList.toggle('visible', ingOpen));
+}
+
+function openIngModal(canalKey) {
+  const names = {tarjeta:'Local Tarjeta',efectivo:'Local Efectivo',mp:'Mercado Pago',meitre:'Meitre',otros:'Otros',ecommerce:'eCommerce'};
+  const vals = MKEYS.map(k=>D[k][canalKey]||0);
+  const total = vals.reduce((a,b)=>a+b,0);
+  if(!total){
+    showModal(names[canalKey]||canalKey,'Sin datos registrados',`<p style="color:var(--muted);font-family:'DM Mono',monospace;font-size:12px">No hay ingresos registrados en este canal en ningún mes del período analizado.</p>`);
+    return;
+  }
+  let body = `<div class="chart-wrap" style="height:200px"><canvas id="modal-chart-ing"></canvas></div>`;
+  body += `<br><table class="tree-table"><thead><tr><th>Mes</th><th class="r">Monto</th><th class="r">% vs Total Ingresos</th></tr></thead><tbody>`;
+  MKEYS.forEach((k,i)=>{
+    const v = D[k][canalKey]||0;
+    body += `<tr><td>${MONTHS[i]}</td><td class="r">${fmt(v)}</td><td class="r">${pct(v,D[k].ingresos)}</td></tr>`;
+  });
+  body += `</tbody></table>`;
+  showModal(names[canalKey]||canalKey,'Evolución mensual', body);
+  setTimeout(()=>{
+    mkChart('modal-chart-ing',{type:'bar',data:{
+      labels:MONTHS,
+      datasets:[{label:names[canalKey],data:vals,backgroundColor:'rgba(200,169,110,.4)',borderColor:'#c8a96e',borderWidth:1.5}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:GC}},y:{grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(1)+'M'}}}}});
+  },50);
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB: EGRESOS
+// ═══════════════════════════════════════════════════════
+let curEgMes = 'nov';
+let egDonutChart = null;
+
+function buildEgPills() {
+  document.getElementById('pills-egresos').innerHTML = MKEYS.map((k,i)=>
+    `<div class="pill ${k===curEgMes?'active':''}" onclick="selectEgMes('${k}',this)">${MONTHS[i]}</div>`
+  ).join('');
+}
+
+function selectEgMes(k, el) {
+  curEgMes = k;
+  document.querySelectorAll('#pills-egresos .pill').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  buildEgresosMesKpis();
+  buildEgDonut();
+  buildEgTable();
+}
+
+function buildEgresosMesKpis() {
+  const d = D[curEgMes];
+  document.getElementById('kpi-egresos').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Egresos</div><div class="kpi-val neg">${fmt(d.egresos)}</div><div class="kpi-sub">${d.label}</div></div>
+    <div class="kpi"><div class="kpi-label">% sobre Ingresos</div><div class="kpi-val ${d.egresos>d.ingresos?'neg':'pos'}">${pct(d.egresos,d.ingresos)}</div><div class="kpi-sub">${d.ingresos>d.egresos?'Mes rentable':'Mes en pérdida'}</div></div>
+    <div class="kpi"><div class="kpi-label">Mayor Costo</div><div class="kpi-val" style="font-size:16px">Empleados</div><div class="kpi-sub">${pct(d.empleados,d.egresos)} del egreso</div></div>
+    <div class="kpi"><div class="kpi-label">Mat. Prima / Ingreso</div><div class="kpi-val">${pct(d.matPrima,d.ingresos)}</div><div class="kpi-sub">Food cost ratio</div></div>
+  `;
+}
+
+function buildEgDonut() {
+  const d = D[curEgMes];
+  if(egDonutChart) egDonutChart.destroy();
+  egDonutChart = mkChart('c-eg-donut',{type:'doughnut',data:{
+    labels:['Mat. Prima','Gastos Var.','Empleados','Impuestos','Estructura'],
+    datasets:[{data:[d.matPrima,d.gasVar,d.empleados,d.impuestos,d.estructura],
+      backgroundColor:['#c8a96e','#6db3d6','#e07070','#9b8bba','#7ecba1'],borderColor:'#141414',borderWidth:3}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12}},
+    tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)+' ('+pct(ctx.raw,d.egresos)+')'}}}}
+  });
+}
+
+function buildEgLine() {
+  mkChart('c-eg-line',{type:'line',data:{
+    labels:MONTHS,
+    datasets:[
+      {label:'Mat. Prima',data:MKEYS.map(k=>D[k].matPrima),borderColor:'#c8a96e',tension:.3,borderWidth:2,pointRadius:4},
+      {label:'Gastos Var.',data:MKEYS.map(k=>D[k].gasVar),borderColor:'#6db3d6',tension:.3,borderWidth:2,pointRadius:4},
+      {label:'Empleados',data:MKEYS.map(k=>D[k].empleados),borderColor:'#e07070',tension:.3,borderWidth:2,pointRadius:4},
+      {label:'Impuestos',data:MKEYS.map(k=>D[k].impuestos),borderColor:'#9b8bba',tension:.3,borderWidth:2,pointRadius:4},
+      {label:'Estructura',data:MKEYS.map(k=>D[k].estructura),borderColor:'#7ecba1',tension:.3,borderWidth:2,pointRadius:4},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom'}},
+    scales:{x:{grid:{color:GC}},y:{grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}}
+  });
+}
+
+function buildEgTable() {
+  const d = D[curEgMes];
+  const eg = d.egresos;
+
+  // Tree structure: cat > subcats > items
+  const tree = [
+    { id:'mp', label:'MATERIA PRIMA', val:d.matPrima, color:'#c8a96e',
+      children:[
+        {label:'Quilmes',val:d.quilmes},
+        {label:'BARRA (total)',val:d.barra.total,id:'barra',
+          children: Object.entries(d.barra).filter(([k])=>k!=='total').map(([k,v])=>({label:k,val:v}))},
+        {label:'COCINA (total)',val:d.cocina.total,id:'cocina',
+          children: Object.entries(d.cocina).filter(([k])=>k!=='total').map(([k,v])=>({label:k,val:v}))},
+      ]},
+    { id:'gv', label:'GASTOS VARIABLES', val:d.gasVar, color:'#6db3d6',
+      children: Object.entries(d.gv).map(([k,v])=>({label:k,val:v}))},
+    { id:'imp', label:'IMPUESTOS', val:d.impuestos, color:'#9b8bba',
+      children: Object.entries(d.imp).map(([k,v])=>({label:k,val:v}))},
+    { id:'est', label:'ESTRUCTURA', val:d.estructura, color:'#7ecba1',
+      children: Object.entries(d.est).map(([k,v])=>({label:k,val:v}))},
+  ];
+
+  let html = `<table class="tree-table"><thead><tr><th>Concepto</th><th class="r">Monto (ARS)</th><th class="r">% Egreso</th><th class="r">vs Mes Ant.</th></tr></thead><tbody>`;
+
+  tree.forEach(cat=>{
+    html += `<tr class="row-cat" ondblclick="toggleEgCat('${cat.id}',this)">
+      <td style="color:${cat.color}">${cat.label}</td>
+      <td class="r" style="color:${cat.color}">${fmt(cat.val)}</td>
+      <td class="r" style="color:${cat.color}">${pct(cat.val,eg)}</td>
+      <td class="r">${egDelta(cat.id.replace('mp','matPrima').replace('gv','gasVar').replace('imp','impuestos').replace('est','estructura'))}</td>
+    </tr>`;
+    cat.children.forEach(sub=>{
+      if(sub.children){
+        html += `<tr class="row-sub" id="eg-sub-${cat.id}-${sub.id||sub.label}" ondblclick="toggleEgSub('${cat.id}','${sub.id||sub.label}',this)">
+          <td>↳ ${sub.label}</td><td class="r">${fmt(sub.val)}</td><td class="r">${pct(sub.val,eg)}</td><td class="r"></td></tr>`;
+        sub.children.forEach(item=>{
+          if(!item.val) return;
+          html += `<tr class="row-subsub" id="eg-subsub-${cat.id}-${sub.id||sub.label}-${item.label}">
+            <td>　↳ ${item.label}</td><td class="r">${fmt(item.val)}</td><td class="r">${pct(item.val,eg)}</td><td class="r"></td></tr>`;
+        });
+      } else {
+        if(!sub.val) return;
+        html += `<tr class="row-sub" id="eg-sub-${cat.id}-${sub.label}">
+          <td>↳ ${sub.label}</td><td class="r">${fmt(sub.val)}</td><td class="r">${pct(sub.val,eg)}</td><td class="r"></td></tr>`;
+      }
+    });
+  });
+  html += `<tr class="row-total-big"><td><strong>TOTAL EGRESOS</strong></td><td class="r"><strong>${fmt(eg)}</strong></td><td class="r">100%</td><td class="r"></td></tr>`;
+  html += '</tbody></table>';
+  document.getElementById('eg-table-wrap').innerHTML = html;
+}
+
+function egDelta(field) {
+  const idx = MKEYS.indexOf(curEgMes);
+  if(idx===0) return '<span class="muted">—</span>';
+  const prev = MKEYS[idx-1];
+  const curr = D[curEgMes][field]||0;
+  const prevV = D[prev][field]||0;
+  if(!prevV) return '—';
+  const d = ((curr-prevV)/prevV*100).toFixed(1);
+  return d>=0 ? `<span style="color:var(--red)">+${d}%</span>` : `<span style="color:var(--green)">${d}%</span>`;
+}
+
+function toggleEgCat(id, el) {
+  const isOpen = el.classList.toggle('open');
+  document.querySelectorAll(`[id^="eg-sub-${id}-"]`).forEach(r=>{
+    r.classList.toggle('visible', isOpen);
+  });
+  if(!isOpen){
+    document.querySelectorAll(`[id^="eg-subsub-${id}-"]`).forEach(r=>r.classList.remove('visible'));
+  }
+}
+function toggleEgSub(catId, subId, el) {
+  const isOpen = el.classList.toggle('open');
+  document.querySelectorAll(`[id^="eg-subsub-${catId}-${subId}-"]`).forEach(r=>{
+    r.classList.toggle('visible', isOpen);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB: EMPLEADOS
+// ═══════════════════════════════════════════════════════
+let curEmpMes = 'nov';
+let empBarChartInst = null;
+
+function buildEmpPills() {
+  document.getElementById('pills-emp').innerHTML = MKEYS.map((k,i)=>
+    `<div class="pill ${k===curEmpMes?'active':''}" onclick="selectEmpMes('${k}',this)">${MONTHS[i]}</div>`
+  ).join('');
+}
+
+function selectEmpMes(k, el) {
+  curEmpMes = k;
+  document.querySelectorAll('#pills-emp .pill').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  buildEmpKpis();
+  buildEmpTopBars();
+  buildEmpTable();
+}
+
+function buildEmpKpis() {
+  const d = D[curEmpMes];
+  const netEmp = d.empleados - (d.emp.CargasSociales||0) - (d.emp.Sindicatos||0);
+  document.getElementById('kpi-emp').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Empleados</div><div class="kpi-val neg">${fmt(d.empleados)}</div><div class="kpi-sub">${d.label}</div></div>
+    <div class="kpi"><div class="kpi-label">Cargas Sociales</div><div class="kpi-val">${fmt(d.emp.CargasSociales)}</div><div class="kpi-sub">${pct(d.emp.CargasSociales,d.empleados)} del total empleados</div></div>
+    <div class="kpi"><div class="kpi-label">Masa Salarial Neta</div><div class="kpi-val">${fmt(netEmp)}</div><div class="kpi-sub">Sin cargas ni sindicato</div></div>
+    <div class="kpi"><div class="kpi-label">% sobre Ingresos</div><div class="kpi-val ${d.empleados/d.ingresos>.4?'neg':'pos'}">${pct(d.empleados,d.ingresos)}</div><div class="kpi-sub">Benchmark ideal: <40%</div></div>
+  `;
+}
+
+function buildEmpBar() {
+  if(empBarChartInst) empBarChartInst.destroy();
+  empBarChartInst = mkChart('c-emp-bar',{type:'bar',data:{
+    labels:MONTHS,
+    datasets:[
+      {label:'Masa Salarial Neta',data:MKEYS.map(k=>D[k].empleados-(D[k].emp.CargasSociales||0)-(D[k].emp.Sindicatos||0)),backgroundColor:'rgba(224,112,112,.3)',borderColor:'#e07070',borderWidth:1.5},
+      {label:'Cargas Sociales',data:MKEYS.map(k=>D[k].emp.CargasSociales||0),backgroundColor:'rgba(155,139,186,.3)',borderColor:'#9b8bba',borderWidth:1.5},
+      {label:'Sindicatos',data:MKEYS.map(k=>D[k].emp.Sindicatos||0),backgroundColor:'rgba(109,179,214,.3)',borderColor:'#6db3d6',borderWidth:1.5},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom'}},
+    scales:{x:{stacked:true,grid:{color:GC}},y:{stacked:true,grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}}
+  });
+}
+
+function buildEmpTopBars() {
+  const d = D[curEmpMes];
+  const entries = Object.entries(d.emp)
+    .filter(([k,v])=>v>0 && !['CargasSociales','Sindicatos','Autonomos','LiquidacionAbogados'].includes(k))
+    .sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max = entries[0]?.[1]||1;
+  const labelMap = {GastonAbramoff:'G. Abramoff (Dir.)',MarianoGechi:'M. Gechidjian (Gte)',EmpleadosExtras:'Empleados Extras',FabianConti:'F. Conti (Cont.)',PabloDiseñador:'Pablo Diseñador'};
+  document.getElementById('emp-bars-wrap').innerHTML = entries.map(([k,v])=>`
+    <div class="brow">
+      <div class="brow-label">${labelMap[k]||k}</div>
+      <div class="brow-track"><div class="brow-fill red" style="width:${(v/max*100).toFixed(1)}%"></div></div>
+      <div class="brow-val">${fmt(v)}</div>
+    </div>`).join('');
+}
+
+function buildEmpTable() {
+  const allNames = new Set();
+  MKEYS.forEach(k=>Object.keys(D[k].emp).forEach(n=>allNames.add(n)));
+  const skip = new Set(['CargasSociales','Sindicatos','Autonomos','LiquidacionAbogados','RRHH']);
+  const names = [...allNames].filter(n=>!skip.has(n));
+
+  let html = `<table class="tree-table"><thead><tr><th>Empleado</th>${MONTHS.map(m=>`<th class="r">${m}</th>`).join('')}<th class="r">Total</th></tr></thead><tbody>`;
+  names.forEach(name=>{
+    const vals = MKEYS.map(k=>D[k].emp[name]||0);
+    const total = vals.reduce((a,b)=>a+b,0);
+    if(!total) return;
+    const labelMap = {GastonAbramoff:'G. Abramoff (Director)',MarianoGechi:'M. Gechidjian (Gte. Nocturno)',EmpleadosExtras:'Empleados Extras',FabianConti:'F. Conti (Contador)',PabloDiseñador:'Pablo (Diseñador)'};
+    html += `<tr ondblclick="openEmpModal('${name}')" style="cursor:pointer">
+      <td>${labelMap[name]||name}</td>${vals.map(v=>`<td class="r">${v?fmt(v):'—'}</td>`).join('')}
+      <td class="r"><strong>${fmt(total)}</strong></td></tr>`;
+  });
+
+  // totals
+  const cargas = MKEYS.map(k=>D[k].emp.CargasSociales||0);
+  html += `<tr class="row-total"><td style="color:var(--muted)">Cargas Sociales</td>${cargas.map(v=>`<td class="r muted">${fmt(v)}</td>`).join('')}<td class="r muted">${fmt(cargas.reduce((a,b)=>a+b,0))}</td></tr>`;
+  const totals = MKEYS.map(k=>D[k].empleados);
+  html += `<tr class="row-total-big"><td><strong>TOTAL</strong></td>${totals.map(v=>`<td class="r"><strong>${fmt(v)}</strong></td>`).join('')}<td class="r"><strong>${fmt(totals.reduce((a,b)=>a+b,0))}</strong></td></tr>`;
+  html += '</tbody></table>';
+  document.getElementById('emp-table-wrap').innerHTML = html;
+}
+
+function openEmpModal(name) {
+  const labelMap = {GastonAbramoff:'G. Abramoff (Director)',MarianoGechi:'M. Gechidjian (Gte. Nocturno)',EmpleadosExtras:'Empleados Extras',FabianConti:'F. Conti (Contador)',PabloDiseñador:'Pablo (Diseñador)'};
+  const displayName = labelMap[name]||name;
+  const vals = MKEYS.map(k=>D[k].emp[name]||0);
+  const total = vals.reduce((a,b)=>a+b,0);
+  if(!total){ showModal(displayName,'Sin pagos registrados',`<p style="color:var(--muted);font-size:12px;font-family:'DM Mono',monospace">No hay pagos registrados en el período analizado.</p>`); return; }
+
+  let body = `<div class="chart-wrap" style="height:180px"><canvas id="modal-emp-chart"></canvas></div><br>`;
+  body += `<table class="tree-table"><thead><tr><th>Mes</th><th class="r">Monto</th><th class="r">% Masa Salarial</th></tr></thead><tbody>`;
+  MKEYS.forEach((k,i)=>{
+    const v = vals[i];
+    body += `<tr><td>${MONTHS[i]}</td><td class="r">${v?fmt(v):'—'}</td><td class="r">${v?pct(v,D[k].empleados):'—'}</td></tr>`;
+  });
+  body += `<tr class="row-total"><td>Total período</td><td class="r"><strong>${fmt(total)}</strong></td><td class="r"></td></tr>`;
+  body += '</tbody></table>';
+  showModal(displayName, 'Evolución de pagos', body);
+  setTimeout(()=>{
+    mkChart('modal-emp-chart',{type:'bar',data:{
+      labels:MONTHS,
+      datasets:[{label:displayName,data:vals,backgroundColor:'rgba(224,112,112,.35)',borderColor:'#e07070',borderWidth:1.5}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:GC}},y:{grid:{color:GC},ticks:{callback:v=>'$'+(v/1e6).toFixed(1)+'M'}}}}});
+  },50);
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB: MENSUAL
+// ═══════════════════════════════════════════════════════
+let curMes = 'nov';
+function buildMesPills() {
+  document.getElementById('pills-mes').innerHTML = MKEYS.map((k,i)=>
+    `<div class="pill ${k===curMes?'active':''}" onclick="selectMes('${k}',this)">${MONTHS[i]}</div>`
+  ).join('');
+}
+
+function selectMes(k, el) {
+  curMes = k;
+  document.querySelectorAll('#pills-mes .pill').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  buildMesView();
+}
+
+function buildMesView() {
+  const d = D[curMes];
+  const margen = (d.resultado/d.ingresos*100).toFixed(1);
+  document.getElementById('kpi-mes').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Ingresos</div><div class="kpi-val">${fmt(d.ingresos)}</div><div class="kpi-sub">${d.label}</div></div>
+    <div class="kpi"><div class="kpi-label">Total Egresos</div><div class="kpi-val neg">${fmt(d.egresos)}</div><div class="kpi-sub">${pct(d.egresos,d.ingresos)} sobre ingresos</div></div>
+    <div class="kpi"><div class="kpi-label">Resultado ${sign(d.resultado)}</div><div class="kpi-val ${clr(d.resultado)}">${fmt(d.resultado)}</div><div class="kpi-sub">Utilidad / Pérdida</div></div>
+    <div class="kpi"><div class="kpi-label">Margen Neto</div><div class="kpi-val ${clr(d.resultado)}">${margen}%</div><div class="kpi-sub">${d.resultado>=0?'Mes rentable':'Mes en pérdida'}</div></div>
+  `;
+
+  const brows = (items, maxVal) => items.filter(i=>i.v>0).sort((a,b)=>b.v-a.v).map(i=>`
+    <div class="brow"><div class="brow-label">${i.l}</div>
+    <div class="brow-track"><div class="brow-fill ${i.c||''}" style="width:${Math.min(100,(i.v/maxVal*100)).toFixed(1)}%"></div></div>
+    <div class="brow-val">${fmt(i.v)}</div></div>`).join('');
+
+  document.getElementById('mes-ing-bars').innerHTML = brows([
+    {l:'Local Tarjeta',v:d.tarjeta},{l:'Local Efectivo',v:d.efectivo},
+    {l:'Mercado Pago',v:d.mp,c:'green'},{l:'Meitre',v:d.meitre,c:'green'},{l:'Otros',v:d.otros}
+  ], d.ingresos);
+
+  document.getElementById('mes-eg-bars').innerHTML = brows([
+    {l:'Empleados',v:d.empleados,c:'red'},{l:'Mat. Prima',v:d.matPrima},
+    {l:'Impuestos',v:d.impuestos},{l:'Estructura',v:d.estructura},{l:'Gastos Var.',v:d.gasVar,c:'blue'}
+  ], d.egresos);
+
+  // mat prima proveedores
+  const mpItems = [
+    {l:'Cocina (total)',v:d.cocina.total},
+    {l:'El Emporio Lanús',v:d.cocina.EmporioLanus},{l:'Verdulería',v:d.cocina.Verduleria},
+    {l:'Todo Carne',v:d.cocina.TodoCarne},{l:'Fresco Pez',v:d.cocina.FrescoPez},
+    {l:'Supermercado',v:d.cocina.Supermercado},{l:'Nueva Casa China',v:d.cocina.NuevaCasaChina},
+    {l:'Sabores de Arg.',v:d.cocina.SaboresArg},{l:'Barra (total)',v:d.barra.total},
+    {l:'Chandon',v:d.barra.Chandon},{l:'Hielo',v:d.barra.Hielo},{l:'Branca',v:d.barra.Branca},
+    {l:'Catena Zapata',v:d.barra.CatenaZapata},{l:'Dist. Squverain',v:d.barra.DistSquverain},
+    {l:'Quilmes',v:d.quilmes},{l:'Coca Cola',v:d.barra.CocaCola}
+  ];
+  document.getElementById('mes-mp-bars').innerHTML = brows(mpItems, d.matPrima);
+
+  // top 10 emp
+  const empItems = Object.entries(d.emp)
+    .filter(([k,v])=>v>0 && !['Sindicatos','Autonomos','LiquidacionAbogados','RRHH'].includes(k))
+    .sort((a,b)=>b[1]-a[1]).slice(0,10)
+    .map(([k,v])=>{
+      const lm = {GastonAbramoff:'Gastón A.',MarianoGechi:'Mariano G.',EmpleadosExtras:'Extras',CargasSociales:'Cargas Soc.',FabianConti:'F. Conti'};
+      return {l:lm[k]||k, v, c:'red'};
+    });
+  document.getElementById('mes-emp-bars').innerHTML = brows(empItems, empItems[0]?.v||1);
+
+  document.getElementById('mes-nota').innerHTML = d.nota;
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════
+function showModal(title, sub, body) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-sub').textContent = sub.toUpperCase();
+  document.getElementById('modal-body').innerHTML = body;
+  const ov = document.getElementById('modal-overlay');
+  ov.style.display = 'flex';
+}
+function closeModal(e) {
+  if(!e || e.target===document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').style.display = 'none';
+  }
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal({}); });
+
+// ═══════════════════════════════════════════════════════
+// TAB ROUTER
+// ═══════════════════════════════════════════════════════
+const built = {};
+function goTab(id, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if(built[id]) return;
+  built[id] = true;
+  if(id==='ingresos') buildIngresos();
+  if(id==='egresos'){ buildEgPills(); buildEgresosMesKpis(); buildEgDonut(); buildEgLine(); buildEgTable(); }
+  if(id==='empleados'){ buildEmpPills(); buildEmpKpis(); buildEmpBar(); buildEmpTopBars(); buildEmpTable(); }
+  if(id==='mensual'){ buildMesPills(); buildMesView(); }
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+buildResumen();
+built['resumen'] = true;
+</script>
+</body>
+</html>
