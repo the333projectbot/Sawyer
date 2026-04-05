@@ -456,8 +456,8 @@ header {
 // ═══════════════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════════════
-const MONTHS = ["Nov '25","Dic '25","Ene '26","Feb '26"];
-const MKEYS  = ["nov","dic","ene","feb"];
+const MONTHS = ["Nov '25","Dic '25","Ene '26","Feb '26","Mar '26"];
+const MKEYS  = ["nov","dic","ene","feb","mar"];
 
 const D = {
   nov: {
@@ -507,7 +507,7 @@ const D = {
     emp:{ GastonAbramoff:0, MarianoGechi:0, Rulo:1300000, Camila:0, Victor:0, Rafael:1500000, Esmeralda:800000, Fabricio:750000, Eliana:1800000, Trinidad:800000, Micaela:830000, Paul:830000, Diego:830000, Nazarena:1000000, Evelyn:600000, Aaron:0, Gabriela:650000, FabianConti:275000, Cecilia:0, PabloDiseñador:300000, DJ:810000, RRHH:0, Damian:1100000, EmpleadosExtras:4089000, CargasSociales:4810375, Autonomos:0, Sindicatos:669320, LiquidacionAbogados:0, RRPP:0 },
     imp:{ MercadoPagoComis:0, ComisionTarjetas:5071352, GastosBancarios:494979, Ganancias:0, IIBB:2535676, IVA:3389449 },
     est:{ Alquiler:5656172, Luz:2133281, Agua:0, Gas:72890, Telefono:0, Telecentro:111847, Seguros:410310, MaxiRest:149900, ABL:189018 },
-    nota:"<strong>Mejor mes del período</strong>: ingresos récord de $73.5M con la masa salarial más baja ($23.7M). El aumento en comisiones de tarjetas (+$2.1M vs diciembre) refleja el crecimiento de ventas. El costo de cocina escala proporcionalmente con las ventas, señal de que no hay ineficiencias ocultas en ese rubro."
+    nota:"Primer mes con resultado positivo ($6M). Ingresos de $73.5M con la masa salarial más baja ($23.7M). El aumento en comisiones de tarjetas (+$2.1M vs diciembre) refleja el crecimiento de ventas. El costo de cocina escala proporcionalmente con las ventas, señal de que no hay ineficiencias ocultas en ese rubro."
   },
   feb: {
     label:"Febrero 2026",
@@ -522,6 +522,20 @@ const D = {
     imp:{ MercadoPagoComis:0, ComisionTarjetas:4845976, GastosBancarios:494979, Ganancias:0, IIBB:2422988, IVA:5075090 },
     est:{ Alquiler:6086177, Luz:1718564, Agua:0, Gas:54436, Telefono:0, Telecentro:117000, Seguros:410310, MaxiRest:149900, ABL:187690 },
     nota:"La <strong>materia prima creció 29% vs enero</strong> (+$4.7M) con ingresos similares. La barra casi duplicó su costo, impulsada por Branca ($2.1M, que en enero era cero) y Distribuidora Squverain ($1.5M). El IVA también saltó a $5M, el más alto del período. Señales de alerta en el control de costos de barra."
+  },
+  mar: {
+    label:"Marzo 2026",
+    ingresos:88774550, egresos:76170054, resultado:12604496,
+    tarjeta:68183432, efectivo:14200668, mp:0, meitre:0, ecommerce:0, pedidosya_t:0, pedidosya_e:0, otros:6390450,
+    matPrima:23462933, gasVar:3948240, empleados:26495581, impuestos:13431030, estructura:8832270,
+    quilmes:350000,
+    barra:{ total:9788131, Chandon:2885483, Branca:0, CatenaZapata:1541775, Savage:2016000, BarraVarios:180700, CocaCola:249300, Hielo:934300, DistSquverain:1980573 },
+    cocina:{ total:13324802, TodoCarne:2059665, FrescoPez:1515605, KimHeeYoung:0, EmporioLanus:2402792, BuenosMares:107270, Supermercado:2375186, NuevaCasaChina:1479962, SaboresArg:567208, Verduleria:2817114, Cafe:0 },
+    gv:{ Publicidad:1300000, MantenArreglos:300000, BienesProductos:369400, Papeleria:0, GastosVarios:507300, Fumigacion:200400, Lavadero:0, Ferreteria:50500, Limpieza:988640, Ivess:0, Cimes:232000 },
+    emp:{ GastonAbramoff:0, MarianoGechi:0, Rulo:1300000, Camila:0, Victor:0, Rafael:1500000, Esmeralda:980000, Fabricio:830000, Eliana:1800000, Trinidad:850000, Micaela:830000, Paul:830000, Diego:830000, Nazarena:1000000, Evelyn:1200000, JP:700000, Gabriela:926667, FabianConti:582400, Valeria:800000, Brenda:800000, PabloDiseñador:300000, DJ:800000, RRHH:0, Damian:1100000, Fotografo:300000, EmpleadosExtras:2510000, CargasSociales:4857195, Autonomos:0, Sindicatos:669320, LiquidacionAbogados:0, RRPP:0, Propina:200000 },
+    imp:{ MercadoPagoComis:0, ComisionTarjetas:5454675, GastosBancarios:0, Ganancias:0, IIBB:2976355, IVA:5000000 },
+    est:{ Alquiler:6086042, Luz:1669101, Agua:0, Gas:62778, Telefono:0, Telecentro:121325, Seguros:391852, MaxiRest:158895, ABL:192278 },
+    nota:"<strong>Mejor resultado del período: +$12.6M</strong>. Ingresos récord de $88.8M impulsados por mayor facturación en Efectivo (+$5M vs Feb) y Otros ($6.4M). La materia prima se mantiene elevada ($23.5M, 26.4%) aunque la cocina y la barra están más equilibradas que en febrero. Los impuestos escalan con la facturación — comisión tarjetas $5.5M e IVA $5M. Mes para analizar qué generó el salto en el canal Otros ($6.4M)."
   }
 };
 
@@ -563,9 +577,9 @@ function buildResumen() {
   const worstM = MKEYS.reduce((b,k)=> D[k].resultado < D[b].resultado ? k : b, MKEYS[0]);
 
   document.getElementById('kpi-resumen').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Ingresos Totales (4 meses)</div><div class="kpi-val">${fmt(totalIng)}</div><div class="kpi-sub">Nov'25 – Feb'26</div></div>
+    <div class="kpi"><div class="kpi-label">Ingresos Totales (5 meses)</div><div class="kpi-val">${fmt(totalIng)}</div><div class="kpi-sub">Nov'25 – Mar'26</div></div>
     <div class="kpi"><div class="kpi-label">Egresos Totales</div><div class="kpi-val neg">${fmt(totalEg)}</div><div class="kpi-sub">Costos + Impuestos</div></div>
-    <div class="kpi"><div class="kpi-label">Resultado Neto</div><div class="kpi-val ${clr(totalRes)}">${fmt(totalRes)}</div><div class="kpi-sub">Acumulado 4 meses</div></div>
+    <div class="kpi"><div class="kpi-label">Resultado Neto</div><div class="kpi-val ${clr(totalRes)}">${fmt(totalRes)}</div><div class="kpi-sub">Acumulado 5 meses</div></div>
     <div class="kpi"><div class="kpi-label">Mejor / Peor Mes</div><div class="kpi-val" style="font-size:18px">${D[bestM].label.split(' ')[0]} / ${D[worstM].label.split(' ')[0]}</div><div class="kpi-sub">${fmt(D[bestM].resultado)} / ${fmt(D[worstM].resultado)}</div></div>
   `;
 
@@ -585,7 +599,7 @@ function buildResumen() {
 
   // Donut avg cost
   const cats = ['Mat. Prima','Gastos Var.','Empleados','Impuestos','Estructura'];
-  const avgs = ['matPrima','gasVar','empleados','impuestos','estructura'].map(k=>MKEYS.reduce((s,m)=>s+D[m][k],0)/4);
+  const avgs = ['matPrima','gasVar','empleados','impuestos','estructura'].map(k=>MKEYS.reduce((s,m)=>s+D[m][k],0)/5);
   mkChart('c-resumen-donut',{type:'doughnut',data:{
     labels:cats,
     datasets:[{data:avgs,backgroundColor:['#c8a96e','#6db3d6','#e07070','#9b8bba','#7ecba1'],borderColor:'#141414',borderWidth:3}]
@@ -615,10 +629,10 @@ function buildResumen() {
 // TAB: INGRESOS
 // ═══════════════════════════════════════════════════════
 function buildIngresos() {
-  const avgIng = MKEYS.reduce((s,k)=>s+D[k].ingresos,0)/4;
+  const avgIng = MKEYS.reduce((s,k)=>s+D[k].ingresos,0)/5;
   const maxM = MKEYS.reduce((b,k)=>D[k].ingresos>D[b].ingresos?k:b, MKEYS[0]);
   document.getElementById('kpi-ingresos').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Promedio Mensual</div><div class="kpi-val">${fmt(avgIng)}</div><div class="kpi-sub">Promedio 4 meses</div></div>
+    <div class="kpi"><div class="kpi-label">Promedio Mensual</div><div class="kpi-val">${fmt(avgIng)}</div><div class="kpi-sub">Promedio 5 meses</div></div>
     <div class="kpi"><div class="kpi-label">Canal Dominante</div><div class="kpi-val" style="font-size:18px">Tarjeta Local</div><div class="kpi-sub">~88% del total</div></div>
     <div class="kpi"><div class="kpi-label">Mejor Mes</div><div class="kpi-val pos">${D[maxM].label.split(' ')[0]}</div><div class="kpi-sub">${fmt(D[maxM].ingresos)}</div></div>
     <div class="kpi"><div class="kpi-label">Canales Digitales</div><div class="kpi-val neg" style="font-size:18px">Sin datos</div><div class="kpi-sub">PedidosYa · ecommerce</div></div>
@@ -1070,6 +1084,8 @@ const NORM = {
          mp: D.ene.matPrima, emp: D.ene.empleados, note:'Mes sin eventos especiales' },
   feb: { ing: D.feb.ingresos + 5500000, eg: D.feb.egresos - 4800000, res: D.feb.resultado + 10300000,
          mp: D.feb.matPrima, emp: D.feb.empleados, note:'Sin incidente San Valentín (~$10.3M)' },
+  mar: { ing: D.mar.ingresos, eg: D.mar.egresos, res: D.mar.resultado,
+         mp: D.mar.matPrima, emp: D.mar.empleados, note:'Mejor resultado del período' },
 };
 
 // ═══════════════════════════════════════════════════════
@@ -1077,12 +1093,12 @@ const NORM = {
 // ═══════════════════════════════════════════════════════
 function buildBenchmarks() {
   // Avg ratios Ene+Feb (meses más limpios)
-  const avgIng = (D.ene.ingresos + NORM.feb.ing) / 2;
-  const avgFC  = (D.ene.matPrima + D.feb.matPrima) / 2 / avgIng * 100;
-  const avgLC  = (D.ene.empleados + D.feb.empleados) / 2 / avgIng * 100;
+  const avgIng = (D.ene.ingresos + NORM.feb.ing + D.mar.ingresos) / 3;
+  const avgFC  = (D.ene.matPrima + D.feb.matPrima + D.mar.matPrima) / 3 / avgIng * 100;
+  const avgLC  = (D.ene.empleados + D.feb.empleados + D.mar.empleados) / 3 / avgIng * 100;
   const avgPC  = avgFC + avgLC;
-  const avgAlq = (D.ene.estructura + D.feb.estructura) / 2 / avgIng * 100;
-  const avgMgn = (D.ene.resultado + NORM.feb.res) / 2 / avgIng * 100;
+  const avgAlq = (D.ene.estructura + D.feb.estructura + D.mar.estructura) / 3 / avgIng * 100;
+  const avgMgn = (D.ene.resultado + NORM.feb.res + D.mar.resultado) / 3 / avgIng * 100;
 
   const bFC = 30, bLC = 32, bPC = 62, bAlq = 8, bMgn = 8;
 
@@ -1271,10 +1287,10 @@ function buildBenchmarks() {
 // TAB: OPORTUNIDADES
 // ═══════════════════════════════════════════════════════
 function buildOportunidades() {
-  const avgIng = (D.ene.ingresos + NORM.feb.ing) / 2;
-  const tarjetaAhorro = (D.ene.imp.ComisionTarjetas + D.feb.imp.ComisionTarjetas) / 2 - avgIng * 0.04;
+  const avgIng = (D.ene.ingresos + NORM.feb.ing + D.mar.ingresos) / 3;
+  const tarjetaAhorro = (D.ene.imp.ComisionTarjetas + D.feb.imp.ComisionTarjetas + D.mar.imp.ComisionTarjetas) / 3 - avgIng * 0.04;
   const seguroCosto = 300000;
-  const barraAlerta = D.feb.barra.total - D.ene.barra.total;
+  const barraAlerta = D.mar.barra.total - D.feb.barra.total;
   const breakeven = 59000000;
   const breakevenMejorado = 56000000;
 
@@ -1495,7 +1511,7 @@ function buildEvolucion() {
   // Maduración: Sawyer vs típico
   // Índice de maduración basado en ventas normalizadas (0-100)
   const maxIng = 75000000;
-  const sawyer = [null, D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, null, null, null, null, null, null, null];
+  const sawyer = [null, D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, D.mar.ingresos, null, null, null, null, null, null];
   const tipico = [null, 20000000, 28000000, 38000000, 45000000, 52000000, 58000000, 63000000, 67000000, 70000000, 72000000, 74000000];
   const excelente = [null, 35000000, 48000000, 60000000, 68000000, 72000000, 74000000, 75000000, 76000000, 77000000, 78000000, 79000000];
   const labsMad = ['Apertura','Mes 1','Mes 2','Mes 3','Mes 4','Mes 5','Mes 6','Mes 7','Mes 8','Mes 9','Mes 10','Mes 11'];
@@ -1549,9 +1565,9 @@ function buildEvolucion() {
 
   // Proyección próximos 6 meses (rango $60M–$75M)
   const proyLabels = [...MONTHS, "Mar '26", "Abr '26", "May '26", "Jun '26", "Jul '26", "Ago '26"];
-  const proyBase = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, 65000000, 62000000, 63000000, 68000000, 72000000, 75000000];
-  const proyOpt  = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, 70000000, 67000000, 68000000, 73000000, 76000000, 80000000];
-  const proyPes  = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, 55000000, 52000000, 54000000, 60000000, 65000000, 68000000];
+  const proyBase = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, D.mar.ingresos, 65000000, 63000000, 68000000, 72000000, 75000000];
+  const proyOpt  = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, D.mar.ingresos, 75000000, 73000000, 78000000, 82000000, 86000000];
+  const proyPes  = [D.nov.ingresos, D.dic.ingresos, D.ene.ingresos, NORM.feb.ing, D.mar.ingresos, 60000000, 58000000, 63000000, 68000000, 72000000];
 
   mkChart('c-evol-proyeccion', {
     type: 'line',
@@ -1670,22 +1686,29 @@ const SALES = {
     cocktails: {'Ruido Blanco':[188,2800118],'Sospecha Brillante':[190,2836028],'Sabor a Ayer':[124,1841743],'Falsa Calma':[116,1696798],'Eco Interno':[107,1587770],'Advertencia Tardia':[74,1107688],'Ausencia Lucida':[77,1131083],'Sombras Blandas':[52,775028],'Retorno Tardio':[61,907028]},
     comida: {'PROTOCOLO 14':[206,27583182],'06. Falsa Remision':[56,840000],'09. Agitacion Controlada':[56,840000],'01. Confabulacion Guiada':[55,825000],'08. Fragmentacion Coherente':[47,705000],'07. Saturacion Suave':[43,645000],'05. Disclocacion Sensorial':[42,630000],'02. Rumiacion Precisa':[38,570000],'11. Error de Clasificacion':[25,375000],'03. Proyeccion Desviada':[20,300000],'12. Dulce Silencioso':[22,330000],'13. Corteza de Recuerdo':[19,285000],'04. Inversion Voluntaria':[17,255000],'10. Control de Impulsos':[15,222000],'14. Realidad Saboteada':[12,180000]},
   },
+  // Marzo 2026 — Maxirest ventas por artículo pendiente
+  mar: {
+    total: 0, unidades: 0,
+    rubros: {Comida:0,Cocktails:0,Vinos:0,Barra:0,SinAlcohol:0,GinVodka:0,Licores:0},
+    cocktails: {},
+    comida: {},
+  },
 };
 
 // ═══════════════════════════════════════════════════════
 // TAB: VENTAS POR PRODUCTO
 // ═══════════════════════════════════════════════════════
 function buildVentas() {
-  const totalVentas = MKEYS.reduce((s,k)=>s+SALES[k].total,0);
-  const totalP14 = MKEYS.reduce((s,k)=>s+SALES[k].comida['PROTOCOLO 14'][1],0);
-  const totalCocktails = MKEYS.reduce((s,k)=>s+SALES[k].rubros.Cocktails,0);
+  const totalVentas = MKEYS.reduce((s,k)=>s+(SALES[k]?SALES[k].total:0),0);
+  const totalP14 = MKEYS.reduce((s,k)=>s+(SALES[k]&&SALES[k].comida['PROTOCOLO 14']?SALES[k].comida['PROTOCOLO 14'][1]:0),0);
+  const totalCocktails = MKEYS.reduce((s,k)=>s+(SALES[k]?SALES[k].rubros.Cocktails:0),0);
   const avgTicket = (SALES.ene.total/SALES.ene.unidades + SALES.feb.total/SALES.feb.unidades) / 2;
 
   document.getElementById('kpi-ventas').innerHTML = `
     <div class="kpi">
       <div class="kpi-label">Ventas Maxirest Acumuladas</div>
       <div class="kpi-val">${fmt(totalVentas)}</div>
-      <div class="kpi-sub">4 meses · ${MKEYS.reduce((s,k)=>s+SALES[k].unidades,0).toLocaleString()} unidades</div>
+      <div class="kpi-sub">4 meses (Nov–Feb) · Maxirest Mar pendiente</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Protocolo 14 — Total</div>
@@ -1710,9 +1733,9 @@ function buildVentas() {
     data: {
       labels: MONTHS,
       datasets: [
-        { label: 'Protocolo 14 ($)', data: MKEYS.map(k=>SALES[k].comida['PROTOCOLO 14'][1]),
+        { label: 'Protocolo 14 ($)', data: MKEYS.map(k=>SALES[k]&&SALES[k].comida['PROTOCOLO 14']?SALES[k].comida['PROTOCOLO 14'][1]:0),
           backgroundColor: 'rgba(200,169,110,0.4)', borderColor: '#c8a96e', borderWidth: 1.5, yAxisID:'y' },
-        { label: 'Servicios vendidos', data: MKEYS.map(k=>SALES[k].comida['PROTOCOLO 14'][0]),
+        { label: 'Servicios vendidos', data: MKEYS.map(k=>SALES[k]&&SALES[k].comida['PROTOCOLO 14']?SALES[k].comida['PROTOCOLO 14'][0]:0),
           type:'line', borderColor: '#7ecba1', borderWidth: 2, pointRadius: 5, tension: 0.3, yAxisID:'y2' },
       ]
     },
@@ -1730,9 +1753,9 @@ function buildVentas() {
   document.getElementById('p14-stats').innerHTML = `
     <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:16px">PROTOCOLO 14 — MÉTRICAS CLAVE</div>
     ${MKEYS.map((k,i)=>{
-      const p = SALES[k].comida['PROTOCOLO 14'];
+      if (!SALES[k].total) return ''; const p = SALES[k].comida['PROTOCOLO 14'];
       const ticket = p[1]/p[0];
-      const pctTotal = p[1]/SALES[k].total*100;
+      if(!p) return ''; const pctTotal = p[1]/SALES[k].total*100;
       const pctComida = p[1]/SALES[k].rubros.Comida*100;
       return `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
         <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:4px">${MONTHS[i]}</div>
@@ -1744,7 +1767,7 @@ function buildVentas() {
       </div>`;
     }).join('')}
     <div style="padding:12px;background:rgba(200,169,110,0.08);border:1px solid rgba(200,169,110,0.2);font-size:11px;color:var(--text);line-height:1.7">
-      El Protocolo 14 pasó de <strong style="color:var(--accent)">31.8%</strong> a <strong style="color:var(--accent)">47.3%</strong> de las ventas totales en 4 meses. 
+      El Protocolo 14 pasó de <strong style="color:var(--accent)">31.8%</strong> a <strong style="color:var(--accent)">47.3%</strong> de las ventas totales en 4 meses (Nov–Feb). 
       El ticket subió de $117K a $134K (+14.5%). Es el motor del negocio.
     </div>
   `;
@@ -1755,10 +1778,10 @@ function buildVentas() {
     data:{
       labels:MONTHS,
       datasets:[
-        {label:'Comida', data:MKEYS.map(k=>(SALES[k].rubros.Comida/SALES[k].total*100).toFixed(1)), backgroundColor:'#c8a96e'},
-        {label:'Cocktails', data:MKEYS.map(k=>(SALES[k].rubros.Cocktails/SALES[k].total*100).toFixed(1)), backgroundColor:'#6db3d6'},
-        {label:'Vinos', data:MKEYS.map(k=>(SALES[k].rubros.Vinos/SALES[k].total*100).toFixed(1)), backgroundColor:'#9b8bba'},
-        {label:'Barra', data:MKEYS.map(k=>(SALES[k].rubros.Barra/SALES[k].total*100).toFixed(1)), backgroundColor:'#555'},
+        {label:'Comida', data:MKEYS.map(k=>SALES[k].total>0?(SALES[k].rubros.Comida/SALES[k].total*100).toFixed(1):null), backgroundColor:'#c8a96e'},
+        {label:'Cocktails', data:MKEYS.map(k=>SALES[k].total>0?(SALES[k].rubros.Cocktails/SALES[k].total*100).toFixed(1):null), backgroundColor:'#6db3d6'},
+        {label:'Vinos', data:MKEYS.map(k=>SALES[k].total>0?(SALES[k].rubros.Vinos/SALES[k].total*100).toFixed(1):null), backgroundColor:'#9b8bba'},
+        {label:'Barra', data:MKEYS.map(k=>SALES[k].total>0?(SALES[k].rubros.Barra/SALES[k].total*100).toFixed(1):null), backgroundColor:'#555'},
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
@@ -1773,9 +1796,9 @@ function buildVentas() {
     data:{
       labels:MONTHS,
       datasets:[
-        {label:'Comida %', data:MKEYS.map(k=>(SALES[k].rubros.Comida/SALES[k].total*100).toFixed(1)),
+        {label:'Comida %', data:MKEYS.map(k=>SALES[k].total>0?(SALES[k].rubros.Comida/SALES[k].total*100).toFixed(1):null),
           borderColor:'#c8a96e', borderWidth:2.5, pointRadius:5, tension:0.3, fill:false},
-        {label:'Barra % (Cocktails+Vinos+Bar)', data:MKEYS.map(k=>((SALES[k].total-SALES[k].rubros.Comida)/SALES[k].total*100).toFixed(1)),
+        {label:'Barra % (Cocktails+Vinos+Bar)', data:MKEYS.map(k=>SALES[k].total>0?((SALES[k].total-SALES[k].rubros.Comida)/SALES[k].total*100).toFixed(1):null),
           borderColor:'#6db3d6', borderWidth:2.5, pointRadius:5, tension:0.3, fill:false},
       ]
     },
@@ -1787,7 +1810,7 @@ function buildVentas() {
 
   // Cocktails ranking
   const ctTotals = {};
-  MKEYS.forEach(k=>Object.entries(SALES[k].cocktails).forEach(([n,[u,v]])=>{
+  MKEYS.filter(k=>SALES[k].total>0).forEach(k=>Object.entries(SALES[k].cocktails).forEach(([n,[u,v]])=>{
     if(!ctTotals[n]) ctTotals[n]=[0,0,[],[],[]];
     ctTotals[n][0]+=u; ctTotals[n][1]+=v;
     ctTotals[n][2].push(u); ctTotals[n][3].push(v);
@@ -1804,7 +1827,7 @@ function buildVentas() {
 
   // Platos ranking (sin PROTOCOLO 14)
   const ftTotals = {};
-  MKEYS.forEach(k=>Object.entries(SALES[k].comida).filter(([n])=>n!=='PROTOCOLO 14').forEach(([n,[u,v]])=>{
+  MKEYS.filter(k=>SALES[k].total>0).forEach(k=>Object.entries(SALES[k].comida).filter(([n])=>n!=='PROTOCOLO 14').forEach(([n,[u,v]])=>{
     if(!ftTotals[n]) ftTotals[n]=[0,0,[],[]];
     ftTotals[n][0]+=u; ftTotals[n][1]+=v;
     ftTotals[n][2].push(u); ftTotals[n][3].push(v);
@@ -1825,9 +1848,9 @@ function buildVentas() {
     data:{
       labels:MONTHS,
       datasets:[
-        {label:'Unidades vendidas', data:MKEYS.map(k=>SALES[k].unidades),
+        {label:'Unidades vendidas', data:MKEYS.map(k=>SALES[k].unidades||null),
           backgroundColor:'rgba(109,179,214,0.3)', borderColor:'#6db3d6', borderWidth:1.5, yAxisID:'y2'},
-        {label:'Ticket promedio ($)', data:MKEYS.map(k=>Math.round(SALES[k].total/SALES[k].unidades)),
+        {label:'Ticket promedio ($)', data:MKEYS.map(k=>SALES[k].unidades>0?Math.round(SALES[k].total/SALES[k].unidades):null),
           type:'line', borderColor:'#c8a96e', borderWidth:2.5, pointRadius:5, tension:0.3, yAxisID:'y'},
       ]
     },
@@ -1842,13 +1865,13 @@ function buildVentas() {
   });
 
   // Gap analysis
-  const plTotals = {nov:71599105, dic:46937122, ene:73470700, feb:69483700};
+  const plTotals = {nov:71599105, dic:46937122, ene:73470700, feb:69483700, mar:88774550};
   document.getElementById('gap-analysis').innerHTML = `
     <table class="tree-table"><thead><tr>
       <th>Mes</th><th class="r">Maxirest</th><th class="r">P&L Total</th><th class="r">Gap</th><th>Explicación probable</th>
     </tr></thead><tbody>
     ${MKEYS.map((k,i)=>{
-      const gap = plTotals[k] - SALES[k].total;
+      const gap = SALES[k].total>0 ? plTotals[k] - SALES[k].total : null;
       const pct = (gap/plTotals[k]*100).toFixed(1);
       const nota = {
         nov:'$27.7M evento + $4.8M no capturado en Maxirest (efectivo caja, pagos directos)',
@@ -1858,7 +1881,7 @@ function buildVentas() {
       }[k];
       return `<tr>
         <td>${MONTHS[i]}</td>
-        <td class="r">${fmt(SALES[k].total)}</td>
+        <td class="r">${SALES[k].total>0?fmt(SALES[k].total):'Pendiente'}</td>
         <td class="r">${fmt(plTotals[k])}</td>
         <td class="r" style="color:${gap>5e6?'var(--red)':gap>2e6?'var(--accent)':'var(--green)'}">${fmt(gap)} (${pct}%)</td>
         <td style="font-size:10px;color:var(--muted)">${nota}</td>
